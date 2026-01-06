@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Image plein écran</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* Supprime marges et scroll */
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* Image plein écran */
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* utilise "cover" si tu veux remplir totalement */
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="ahf.jpg" alt="Image plein écran">
+
+</body>
+</html>
