@@ -22,7 +22,13 @@ export const metadata: Metadata = {
 
 export default async function MembresPageRoute() {
   const hotels = await getHotelsAHF();
-  const actifs = hotels.filter((h) => h.estActif);
+  const actifs = hotels
+    .filter((h) => h.estActif)
+    .sort((a, b) => {
+      const na = a.numeroAHF !== null ? parseInt(a.numeroAHF, 10) : Infinity;
+      const nb = b.numeroAHF !== null ? parseInt(b.numeroAHF, 10) : Infinity;
+      return na - nb;
+    });
 
   return (
     <>
