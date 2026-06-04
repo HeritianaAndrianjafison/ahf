@@ -41,7 +41,7 @@ export default function HeroSection({ coverImage }: HeroSectionProps) {
       <div className="relative z-10 text-center max-w-5xl mx-auto px-5 md:px-10 pt-24">
 
         {/* Logo AHF */}
-        <div className="hidden md:flex justify-center mb-7 au1">
+        <div className="hidden justify-center mb-7 au1">
           <div
             className="rounded-3xl overflow-hidden"
             style={{

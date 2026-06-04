@@ -45,21 +45,21 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/" className="flex items-center gap-3 group" aria-label="AHF Foulpointe — Accueil">
             <div className="rounded-xl overflow-hidden shrink-0"
-              style={{ boxShadow: "0 2px 12px rgba(200,169,110,.25)" }}
+              style={{ boxShadow: "0 4px 18px rgba(200,169,110,.35)" }}
             >
               <Image
                 src="/logo-ahf.jpeg"
                 alt="Logo AHF"
-                width={120}
-                height={64}
-                className="block h-10 w-auto"
+                width={160}
+                height={86}
+                className="block h-14 w-auto"
               />
             </div>
             <div>
-              <div className="text-white font-display font-bold text-[1rem] leading-none tracking-wide">
+              <div className="text-white font-display font-bold text-[1.15rem] leading-none tracking-wide">
                 AHF Foulpointe
               </div>
-              <div className="text-[9px] tracking-[0.25em] uppercase mt-0.5" style={{ color: "var(--color-gold)" }}>
+              <div className="text-[10px] tracking-[0.25em] uppercase mt-1" style={{ color: "var(--color-gold)" }}>
                 Association Hôtelière
               </div>
             </div>
