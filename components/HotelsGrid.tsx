@@ -641,7 +641,7 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
 
 /* ── Carte membre accordion ──────────────────────────────────────── */
 function MemberCard({
-  hotel, cover, thumb, isActive, onActivate, onViewProfile,
+  hotel, cover, thumb, isActive, onActivate, onViewProfile, reduceMotion,
 }: {
   hotel: HotelAHF;
   cover: string;
@@ -649,50 +649,81 @@ function MemberCard({
   isActive: boolean;
   onActivate: () => void;
   onViewProfile: () => void;
+  reduceMotion: boolean;
 }) {
   const raw  = hotel.description ?? hotel.adresse ?? "Hôtel membre certifié AHF · Foulpointe";
-  const desc = raw.length > 120 ? raw.slice(0, 120) + "…" : raw;
+  const desc = raw.length > 110 ? raw.slice(0, 110) + "…" : raw;
+
+  const cardTransition = reduceMotion ? "none"
+    : "flex-basis 0.55s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.55s ease";
+
+  const imgTransition = reduceMotion ? "none"
+    : "filter 0.35s, transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)";
 
   return (
     <article
       onClick={onActivate}
-      onMouseEnter={() => {
-        if (window.matchMedia("(hover: hover)").matches) onActivate();
-      }}
+      onMouseEnter={() => { if (window.matchMedia("(hover: hover)").matches) onActivate(); }}
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onActivate(); } }}
+      aria-label={hotel.nom}
+      aria-pressed={isActive}
+      className="focus-visible:outline-none"
       style={{
         position: "relative",
         flexShrink: 0,
         flexBasis: isActive ? "30rem" : "5rem",
         height: "26rem",
-        borderRadius: "1rem",
+        borderRadius: "1.1rem",
         overflow: "hidden",
         cursor: "pointer",
-        transition: "flex-basis 0.55s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.55s ease",
-        transform: isActive ? "translateY(-6px)" : "translateY(0)",
-        boxShadow: isActive ? "0 18px 55px rgba(0,0,0,.50)" : "none",
+        transition: cardTransition,
+        transform: isActive ? "translateY(-8px)" : "translateY(0)",
+        boxShadow: isActive
+          ? "0 24px 64px rgba(0,0,0,.62), 0 0 0 1px rgba(200,169,110,.42), 0 0 56px rgba(200,169,110,.08)"
+          : "0 4px 20px rgba(0,0,0,.28), 0 0 0 1px rgba(200,169,110,.13)",
       }}
     >
-      {/* Background image */}
+      {/* Ligne shimmer dorée — active uniquement */}
+      {isActive && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0, left: "6%", right: "6%", height: 1,
+            background: "linear-gradient(90deg, transparent, rgba(200,169,110,.72) 35%, rgba(226,201,142,.60) 65%, transparent)",
+            zIndex: 4,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
+      {/* Image de fond */}
       <Image
         src={cover}
-        alt={hotel.nom}
+        alt={`Couverture ${hotel.nom}`}
         fill
         className="object-cover"
         sizes="(max-width: 768px) 90vw, 480px"
         style={{
-          filter: isActive ? "brightness(0.9) saturate(100%)" : "brightness(0.72) saturate(70%)",
-          transform: isActive ? "scale(1.06)" : "scale(1)",
-          transition: "filter 0.3s, transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)",
+          filter: isActive ? "brightness(0.80) saturate(110%)" : "brightness(0.55) saturate(60%)",
+          transform: isActive ? "scale(1.05)" : "scale(1)",
+          transition: imgTransition,
         }}
       />
 
       {/* Gradient overlay */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 1,
-        background: "linear-gradient(transparent 40%, rgba(0,0,0,.85) 100%)",
-      }} />
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: isActive
+            ? "linear-gradient(135deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.05) 40%, rgba(0,0,0,.78) 100%)"
+            : "linear-gradient(to bottom, rgba(0,0,0,.10) 0%, rgba(0,0,0,.88) 100%)",
+        }}
+      />
 
-      {/* Content */}
+      {/* Contenu */}
       <div
         style={{
           position: "absolute",
@@ -702,64 +733,119 @@ function MemberCard({
           flexDirection: isActive ? "row" : "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: isActive ? "1.2rem 2rem" : "0",
-          gap: isActive ? "1.1rem" : "0.7rem",
+          padding: isActive ? "1.25rem 1.75rem" : "0",
+          gap: isActive ? "1.25rem" : "0.7rem",
         }}
       >
-        {/* Thumbnail — active only */}
+        {/* Thumbnail portrait — active seulement */}
         {isActive && (
           <div style={{
             position: "relative",
             flexShrink: 0,
-            width: 133,
-            height: 269,
-            borderRadius: "0.45rem",
+            width: 120,
+            height: 248,
+            borderRadius: "0.65rem",
             overflow: "hidden",
-            boxShadow: "0 4px 10px rgba(0,0,0,.4)",
+            boxShadow: "0 8px 28px rgba(0,0,0,.55), 0 0 0 1px rgba(200,169,110,.28)",
           }}>
-            <Image src={thumb} alt={`Aperçu ${hotel.nom}`} fill className="object-cover" sizes="133px" />
+            <Image src={thumb} alt={`Photo ${hotel.nom}`} fill className="object-cover" sizes="120px" />
           </div>
         )}
 
-        {/* Titre + desc + bouton */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
+        {/* Panneau droite : badge + titre + adresse + desc + bouton */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem", flex: isActive ? 1 : "unset", minWidth: 0 }}>
+
+          {/* Badge numéro AHF — active seulement */}
+          {isActive && hotel.numeroAHF && (
+            <div style={{
+              display: "inline-flex",
+              alignSelf: "flex-start",
+              padding: "0.18rem 0.68rem",
+              borderRadius: "9999px",
+              background: "rgba(7,9,13,.82)",
+              border: "1px solid rgba(200,169,110,.40)",
+              color: "rgba(200,169,110,.92)",
+              fontSize: "0.68rem",
+              fontWeight: 800,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase" as const,
+            }}>
+              {hotel.numeroAHF}
+            </div>
+          )}
+
+          {/* Titre — vertical si inactif, horizontal si actif */}
           <h3
             className="font-display"
             style={{
               color: "#fff",
               fontWeight: 700,
-              fontSize: isActive ? "2.4rem" : "1.35rem",
+              fontSize: isActive ? "2.1rem" : "1.25rem",
               writingMode: isActive ? "horizontal-tb" : "vertical-rl",
               transform: isActive ? "none" : "rotate(180deg)",
-              letterSpacing: isActive ? "-0.02em" : "normal",
+              letterSpacing: isActive ? "-0.025em" : "0.04em",
               whiteSpace: isActive ? "normal" : "nowrap",
               lineHeight: 1.1,
+              textShadow: "0 2px 12px rgba(0,0,0,.65)",
             }}
           >
             {hotel.nom}
           </h3>
 
+          {/* Contenu étendu — active seulement */}
           {isActive && (
             <>
-              <p style={{ color: "#ddd", fontSize: "1rem", lineHeight: 1.4, maxWidth: "16rem" }}>
+              {hotel.adresse && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 5,
+                  color: "rgba(200,169,110,.72)",
+                  fontSize: "0.78rem",
+                  fontFamily: "var(--font-body)",
+                }}>
+                  <MapPin style={{ width: 12, height: 12, flexShrink: 0 }} aria-hidden="true" />
+                  {hotel.adresse}
+                </div>
+              )}
+
+              <p style={{
+                color: "rgba(255,255,255,.75)",
+                fontSize: "0.92rem",
+                lineHeight: 1.56,
+                maxWidth: "17rem",
+                fontFamily: "var(--font-body)",
+              }}>
                 {desc}
               </p>
+
               <button
                 onClick={(e) => { e.stopPropagation(); onViewProfile(); }}
                 style={{
-                  padding: "0.55rem 1.3rem",
+                  marginTop: "0.2rem",
+                  padding: "0.52rem 1.3rem",
                   border: "none",
                   borderRadius: "9999px",
-                  background: "var(--color-gold)",
+                  background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
                   color: "#07120A",
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
                   cursor: "pointer",
                   width: "fit-content",
-                  transition: "background 0.2s",
+                  boxShadow: "0 4px 18px rgba(200,169,110,.38)",
+                  transition: "background 0.2s, box-shadow 0.2s, transform 0.15s",
+                  letterSpacing: "0.01em",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--color-gold-l)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--color-gold)"; }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "var(--color-gold-l)";
+                  el.style.boxShadow = "0 6px 24px rgba(200,169,110,.55)";
+                  el.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))";
+                  el.style.boxShadow = "0 4px 18px rgba(200,169,110,.38)";
+                  el.style.transform = "translateY(0)";
+                }}
               >
                 Voir le profil
               </button>
@@ -771,13 +857,23 @@ function MemberCard({
   );
 }
 
-/* ── Slider membres actifs (accordion CodePen style) ─────────────── */
+/* ── Slider membres actifs (accordion) ──────────────────────────── */
 function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: HotelAHF) => void }) {
-  const [activeIdx, setActiveIdx] = useState(0);
+  const [activeIdx,   setActiveIdx]   = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const outerRef   = useRef<HTMLDivElement>(null);
   const touchStart = useRef({ x: 0, y: 0 });
 
-  /* Centre la carte active après chaque changement */
+  /* prefers-reduced-motion */
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(mq.matches);
+    const fn = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+
+  /* Centre la carte active */
   useEffect(() => {
     const outer = outerRef.current;
     if (!outer) return;
@@ -786,8 +882,8 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
     const card = track.children[activeIdx] as HTMLElement;
     if (!card) return;
     const left = card.offsetLeft - (outer.clientWidth / 2 - card.clientWidth / 2);
-    outer.scrollTo({ left, behavior: "smooth" });
-  }, [activeIdx]);
+    outer.scrollTo({ left, behavior: reduceMotion ? "auto" : "smooth" });
+  }, [activeIdx, reduceMotion]);
 
   /* Navigation clavier */
   useEffect(() => {
@@ -801,66 +897,117 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
 
   if (hotels.length === 0) return null;
 
-  const navStyle = (disabled: boolean): React.CSSProperties => ({
+  const isFirst = activeIdx === 0;
+  const isLast  = activeIdx === hotels.length - 1;
+
+  const navBtnBase: React.CSSProperties = {
     width: "2.5rem",
     height: "2.5rem",
     borderRadius: "50%",
-    border: "none",
-    background: "rgba(255,255,255,.12)",
-    color: "#fff",
-    fontSize: "1.5rem",
+    border: "1px solid rgba(200,169,110,.28)",
+    background: "rgba(200,169,110,.10)",
+    color: "var(--color-gold-l)",
+    fontSize: "1.4rem",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    cursor: disabled ? "default" : "pointer",
-    opacity: disabled ? 0.3 : 1,
-    transition: "background 0.3s, opacity 0.3s",
-  });
+    transition: "background 0.25s, border-color 0.25s, color 0.25s, opacity 0.25s",
+    backdropFilter: "blur(8px)",
+  };
 
   return (
-    <section style={{ background: "#07090d" }}>
-      {/* En-tête */}
-      <div className="max-w-7xl mx-auto" style={{ padding: "70px 20px 40px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "2rem" }}>
+    <section style={{ background: "#07090d", position: "relative", overflow: "hidden" }}>
+
+      {/* Glows de fond */}
+      <div aria-hidden="true" style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: "radial-gradient(ellipse 60% 42% at 50% 0%, rgba(200,169,110,.055) 0%, transparent 65%)",
+      }} />
+      <div aria-hidden="true" style={{
+        position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
+        pointerEvents: "none", width: "55%", height: "180px",
+        background: "radial-gradient(ellipse, rgba(200,169,110,.042) 0%, transparent 70%)",
+      }} />
+
+      {/* Ligne dorée de séparation en haut */}
+      <div aria-hidden="true" style={{
+        position: "absolute", top: 0, left: "8%", right: "8%", height: 1, pointerEvents: "none",
+        background: "linear-gradient(90deg, transparent, rgba(200,169,110,.32) 30%, rgba(226,201,142,.25) 70%, transparent)",
+      }} />
+
+      {/* ── En-tête ──────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-5 md:px-10 reveal" style={{ paddingTop: "4.5rem", paddingBottom: "2.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "2rem", flexWrap: "wrap" }}>
+
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-px w-12" style={{ background: "rgba(200,169,110,.40)" }} aria-hidden="true" />
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-px w-12" style={{ background: "rgba(200,169,110,.45)" }} aria-hidden="true" />
               <span className="text-xs font-bold tracking-[0.3em] uppercase" style={{ color: "var(--color-gold)" }}>
                 Membres actifs
               </span>
             </div>
             <h2
               className="font-display font-black text-white"
-              style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)", lineHeight: 1.2 }}
+              style={{ fontSize: "clamp(1.75rem, 3.5vw, 2.6rem)", lineHeight: 1.12, letterSpacing: "-0.022em" }}
             >
               Nos établissements<br />
               <span style={{ color: "var(--color-gold-l)" }}>certifiés AHF</span>
             </h2>
           </div>
 
-          {/* Boutons nav */}
-          <div className="flex gap-2 shrink-0">
-            <button
-              aria-label="Précédent"
-              disabled={activeIdx === 0}
-              onClick={() => setActiveIdx(p => Math.max(p - 1, 0))}
-              style={navStyle(activeIdx === 0)}
-              onMouseEnter={(e) => { if (activeIdx > 0) (e.currentTarget as HTMLElement).style.background = "var(--color-gold)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,.12)"; }}
-            >‹</button>
-            <button
-              aria-label="Suivant"
-              disabled={activeIdx === hotels.length - 1}
-              onClick={() => setActiveIdx(p => Math.min(p + 1, hotels.length - 1))}
-              style={navStyle(activeIdx === hotels.length - 1)}
-              onMouseEnter={(e) => { if (activeIdx < hotels.length - 1) (e.currentTarget as HTMLElement).style.background = "var(--color-gold)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,.12)"; }}
-            >›</button>
+          {/* Compteur + boutons */}
+          <div className="flex items-center gap-3 shrink-0">
+            <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "rgba(255,255,255,.22)", fontVariantNumeric: "tabular-nums" }}>
+              {activeIdx + 1} / {hotels.length}
+            </span>
+            <div className="flex gap-2">
+              <button
+                aria-label="Hôtel précédent"
+                disabled={isFirst}
+                onClick={() => setActiveIdx(p => Math.max(p - 1, 0))}
+                style={{ ...navBtnBase, cursor: isFirst ? "default" : "pointer", opacity: isFirst ? 0.28 : 1 }}
+                onMouseEnter={(e) => {
+                  if (!isFirst) {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.background = "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))";
+                    el.style.color = "#07120A";
+                    el.style.borderColor = "transparent";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "rgba(200,169,110,.10)";
+                  el.style.color = "var(--color-gold-l)";
+                  el.style.borderColor = "rgba(200,169,110,.28)";
+                }}
+              >‹</button>
+
+              <button
+                aria-label="Hôtel suivant"
+                disabled={isLast}
+                onClick={() => setActiveIdx(p => Math.min(p + 1, hotels.length - 1))}
+                style={{ ...navBtnBase, cursor: isLast ? "default" : "pointer", opacity: isLast ? 0.28 : 1 }}
+                onMouseEnter={(e) => {
+                  if (!isLast) {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.background = "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))";
+                    el.style.color = "#07120A";
+                    el.style.borderColor = "transparent";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = "rgba(200,169,110,.10)";
+                  el.style.color = "var(--color-gold-l)";
+                  el.style.borderColor = "rgba(200,169,110,.28)";
+                }}
+              >›</button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Track accordion */}
+      {/* ── Track accordion ──────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto overflow-hidden" ref={outerRef}>
         <div
           style={{
@@ -868,7 +1015,8 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
             gap: "1.25rem",
             alignItems: "flex-start",
             justifyContent: "center",
-            paddingBottom: "40px",
+            paddingBottom: "3rem",
+            paddingInline: "1.25rem",
           }}
           onTouchStart={(e) => {
             touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -876,7 +1024,7 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
           onTouchEnd={(e) => {
             const dx = e.changedTouches[0].clientX - touchStart.current.x;
             const dy = e.changedTouches[0].clientY - touchStart.current.y;
-            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+            if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
               setActiveIdx(p => dx > 0 ? Math.max(p - 1, 0) : Math.min(p + 1, hotels.length - 1));
             }
           }}
@@ -890,27 +1038,30 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
               isActive={i === activeIdx}
               onActivate={() => setActiveIdx(i)}
               onViewProfile={() => onSelect(hotel)}
+              reduceMotion={reduceMotion}
             />
           ))}
         </div>
       </div>
 
-      {/* Dots */}
-      <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", paddingBottom: "28px" }}>
+      {/* ── Dots pill ────────────────────────────────────────────── */}
+      <div style={{ display: "flex", gap: "0.45rem", justifyContent: "center", paddingBottom: "3.5rem" }}>
         {hotels.map((h, i) => (
           <button
             key={i}
             onClick={() => setActiveIdx(i)}
             aria-label={`Aller à ${h.nom}`}
             style={{
-              width: 13,
-              height: 13,
-              borderRadius: "50%",
-              border: "none",
+              height: 7,
+              width: i === activeIdx ? 28 : 7,
+              borderRadius: "9999px",
+              border: i === activeIdx ? "none" : "1px solid rgba(200,169,110,.20)",
               cursor: "pointer",
-              background: i === activeIdx ? "var(--color-gold)" : "rgba(255,255,255,.35)",
-              transform: i === activeIdx ? "scale(1.2)" : "scale(1)",
-              transition: "background 0.3s, transform 0.3s",
+              background: i === activeIdx
+                ? "linear-gradient(90deg, var(--color-gold-d), var(--color-gold))"
+                : "rgba(255,255,255,.14)",
+              boxShadow: i === activeIdx ? "0 0 10px rgba(200,169,110,.45)" : "none",
+              transition: reduceMotion ? "none" : "width 0.35s cubic-bezier(0.25,0.46,0.45,0.94), background 0.3s",
             }}
           />
         ))}
