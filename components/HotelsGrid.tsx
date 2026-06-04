@@ -62,8 +62,8 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
 
         {/* Numéro AHF — haut gauche */}
         {hotel.numeroAHF && (
-          <div className="absolute top-3 left-3 px-3.5 py-2 rounded-xl text-[20px] font-black tracking-wide uppercase"
-            style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 4px 18px rgba(200,169,110,.55)", lineHeight: 1 }}>
+          <div className="absolute top-3 left-3 px-4 py-2.5 rounded-xl text-[28px] font-black tracking-wide uppercase"
+            style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 6px 22px rgba(200,169,110,.60)", lineHeight: 1 }}>
             {hotel.numeroAHF}
           </div>
         )}
@@ -76,14 +76,14 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
 
         {/* Nom + adresse */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-8">
-          <h3 className="font-display font-black text-white leading-tight mb-1"
-            style={{ fontSize: "1rem", letterSpacing: "-0.01em", textShadow: "0 2px 12px rgba(0,0,0,.70)" }}>
+          <h3 className="font-display font-black text-white leading-tight mb-1.5"
+            style={{ fontSize: "1.35rem", letterSpacing: "-0.01em", textShadow: "0 2px 16px rgba(0,0,0,.80)" }}>
             {hotel.nom}
           </h3>
           {hotel.adresse && (
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3 h-3 shrink-0" style={{ color: "var(--color-gold)" }} aria-hidden="true" />
-              <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,.58)" }}>{hotel.adresse}</span>
+              <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--color-gold)" }} aria-hidden="true" />
+              <span className="text-[13px] font-medium" style={{ color: "rgba(255,255,255,.62)" }}>{hotel.adresse}</span>
             </div>
           )}
         </div>
