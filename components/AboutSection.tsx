@@ -61,10 +61,9 @@ export default function AboutSection() {
               chaleureux et d'une immersion authentique dans la beauté de Foulpointe.
             </p>
 
-            <div className="mt-10 grid grid-cols-2 gap-5">
+            <div className="mt-10 grid grid-cols-1 gap-5">
               {[
                 { num: "2021", label: "Année de création" },
-                { num: "800m", label: "Proximité mer" },
               ].map((s) => (
                 <div
                   key={s.label}
