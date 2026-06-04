@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -10,11 +11,19 @@ const NAV_LINKS = [
   { label: "À propos",       href: "#apropos" },
   { label: "Rejoindre",      href: "#rejoindre" },
   { label: "Contact",        href: "#contact" },
+  { label: "Membres AHF",   href: "/membres" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen]         = useState(false);
+  const pathname                = usePathname();
+
+  const resolveHref = (href: string) =>
+    href.startsWith("#") && pathname !== "/" ? `/${href}` : href;
+
+  const isActive = (href: string) =>
+    !href.startsWith("#") && pathname === href;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -34,12 +43,12 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-5 md:px-10 flex items-center justify-between">
 
           {/* Logo */}
-          <a href="#" className="flex items-center gap-3 group" aria-label="AHF Foulpointe — Accueil">
+          <a href="/" className="flex items-center gap-3 group" aria-label="AHF Foulpointe — Accueil">
             <div className="rounded-xl overflow-hidden shrink-0"
               style={{ boxShadow: "0 2px 12px rgba(200,169,110,.25)" }}
             >
               <Image
-                src="/logo ahf.jpeg"
+                src="/logo-ahf.jpeg"
                 alt="Logo AHF"
                 width={120}
                 height={64}
@@ -61,11 +70,11 @@ export default function Navbar() {
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={resolveHref(link.href)}
                 className="font-medium transition-colors duration-200 cursor-pointer"
-                style={{ color: "rgba(255,255,255,.65)" }}
+                style={{ color: isActive(link.href) ? "var(--color-gold)" : "rgba(255,255,255,.65)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-gold-l)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,.65)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = isActive(link.href) ? "var(--color-gold)" : "rgba(255,255,255,.65)")}
               >
                 {link.label}
               </a>
@@ -75,7 +84,7 @@ export default function Navbar() {
           {/* CTA + hamburger */}
           <div className="flex items-center gap-3">
             <a
-              href="#rejoindre"
+              href={resolveHref("#rejoindre")}
               className="hidden md:flex items-center font-bold text-sm px-5 rounded-full transition-all duration-200 cursor-pointer hover:opacity-90 hover:scale-105"
               style={{
                 background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
@@ -122,17 +131,20 @@ export default function Navbar() {
               {NAV_LINKS.map((link) => (
                 <a
                   key={link.href}
-                  href={link.href}
+                  href={resolveHref(link.href)}
                   onClick={() => setOpen(false)}
                   className="font-medium text-lg py-3 border-b transition-colors duration-200 cursor-pointer"
-                  style={{ color: "rgba(255,255,255,.75)", borderColor: "rgba(200,169,110,.15)" }}
+                  style={{
+                    color: isActive(link.href) ? "var(--color-gold)" : "rgba(255,255,255,.75)",
+                    borderColor: "rgba(200,169,110,.15)",
+                  }}
                 >
                   {link.label}
                 </a>
               ))}
             </nav>
             <a
-              href="#rejoindre"
+              href={resolveHref("#rejoindre")}
               onClick={() => setOpen(false)}
               className="mt-auto flex items-center justify-center font-bold text-sm rounded-full cursor-pointer"
               style={{
