@@ -58,19 +58,25 @@ function MemberCard({
           }}
         />
 
-        {/* numeroAHF badge */}
-        {hotel.numeroAHF && (
-          <div
-            className="absolute top-3 left-3 text-[15px] font-black tracking-wider uppercase px-3 py-1.5 rounded-full"
-            style={{
-              background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
-              color: "#07120A",
-              boxShadow: "0 4px 16px rgba(200,169,110,.45)",
-            }}
-          >
-            #{hotel.numeroAHF}
-          </div>
-        )}
+        {/* Numéro AHF + Nom — haut gauche en ligne */}
+        <div className="absolute top-3 left-3 right-14 flex items-center gap-2">
+          {hotel.numeroAHF && (
+            <div
+              className="text-[15px] font-black tracking-wider uppercase px-3 py-1.5 rounded-full shrink-0"
+              style={{
+                background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
+                color: "#07120A",
+                boxShadow: "0 4px 16px rgba(200,169,110,.45)",
+              }}
+            >
+              #{hotel.numeroAHF}
+            </div>
+          )}
+          <h3 className="font-display font-bold text-white text-base leading-snug line-clamp-1 min-w-0"
+            style={{ textShadow: "0 2px 12px rgba(0,0,0,.80)" }}>
+            {hotel.nom}
+          </h3>
+        </div>
 
         {/* Certifié AHF badge */}
         <div
@@ -82,22 +88,6 @@ function MemberCard({
           }}
         >
           Certifié AHF
-        </div>
-
-        {/* Name + address overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3">
-          <h3 className="font-display font-bold text-white text-base leading-snug line-clamp-1">
-            {hotel.nom}
-          </h3>
-          {hotel.adresse && (
-            <p
-              className="flex items-center gap-1.5 mt-1 text-[11px] line-clamp-1"
-              style={{ color: "rgba(255,255,255,.52)" }}
-            >
-              <MapPin className="w-3 h-3 shrink-0" style={{ color: "var(--color-gold)" }} />
-              {hotel.adresse}
-            </p>
-          )}
         </div>
       </div>
 
