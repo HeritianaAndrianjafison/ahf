@@ -49,7 +49,7 @@ export default function HeroSection({ coverImage }: HeroSectionProps) {
             }}
           >
             <Image
-              src="/logo ahf.jpeg"
+              src="/logo-ahf.jpeg"
               alt="Logo AHF — Association Hôtelière de Foulpointe"
               width={400}
               height={215}
