@@ -1,27 +1,30 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Phone, Globe, MapPin } from "lucide-react";
+import { ArrowLeft, Phone, Globe, MapPin, ArrowUpRight } from "lucide-react";
 import type { HotelAHF } from "@/lib/api";
-
-function FacebookIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <path d="M24 12.073C24 5.404 18.627 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
-    </svg>
-  );
-}
+import HotelDrawer, { FacebookIcon } from "@/components/HotelDrawer";
 
 interface Props {
   hotels: HotelAHF[];
 }
 
-function MemberCard({ hotel }: { hotel: HotelAHF }) {
+function MemberCard({
+  hotel,
+  onSelect,
+}: {
+  hotel: HotelAHF;
+  onSelect: (h: HotelAHF) => void;
+}) {
   const cover = hotel.photoCouverture ?? hotel.photos[0] ?? null;
 
   return (
-    <article className="glass-card rounded-2xl overflow-hidden group reveal cursor-default">
+    <article
+      onClick={() => onSelect(hotel)}
+      className="glass-card rounded-2xl overflow-hidden group reveal cursor-pointer"
+    >
       {/* Cover */}
       <div className="relative h-52 overflow-hidden" style={{ background: "#0D1D26" }}>
         {cover ? (
@@ -118,13 +121,14 @@ function MemberCard({ hotel }: { hotel: HotelAHF }) {
           </p>
         )}
 
-        {/* Links */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Quick links */}
+        <div className="flex items-center gap-2 flex-wrap mb-3">
           {hotel.siteWeb && (
             <a
               href={hotel.siteWeb}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full transition-opacity duration-200 hover:opacity-75 cursor-pointer"
               style={{
                 background: "rgba(200,169,110,.12)",
@@ -141,6 +145,7 @@ function MemberCard({ hotel }: { hotel: HotelAHF }) {
               href={hotel.facebook}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full transition-opacity duration-200 hover:opacity-75 cursor-pointer"
               style={{
                 background: "rgba(24,119,242,.12)",
@@ -155,6 +160,7 @@ function MemberCard({ hotel }: { hotel: HotelAHF }) {
           {hotel.telephone && (
             <a
               href={`tel:${hotel.telephone}`}
+              onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full transition-opacity duration-200 hover:opacity-75 cursor-pointer ml-auto"
               style={{
                 color: "var(--color-cyan)",
@@ -167,14 +173,53 @@ function MemberCard({ hotel }: { hotel: HotelAHF }) {
             </a>
           )}
         </div>
+
+        {/* CTA */}
+        <button
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer transition-all duration-200"
+          style={{
+            background: "rgba(200,169,110,.10)",
+            border: "1px solid rgba(200,169,110,.22)",
+            color: "var(--color-gold-l)",
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.background = "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))";
+            el.style.color = "#07120A";
+            el.style.borderColor = "transparent";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.background = "rgba(200,169,110,.10)";
+            el.style.color = "var(--color-gold-l)";
+            el.style.borderColor = "rgba(200,169,110,.22)";
+          }}
+        >
+          Voir le profil
+          <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+        </button>
       </div>
     </article>
   );
 }
 
 export default function MembresGrid({ hotels }: Props) {
+  const [selectedHotel, setSelectedHotel] = useState<HotelAHF | null>(null);
+
+  const sorted = useMemo(
+    () =>
+      [...hotels].sort((a, b) => {
+        if (!a.numeroAHF && !b.numeroAHF) return a.ordre - b.ordre;
+        if (!a.numeroAHF) return 1;
+        if (!b.numeroAHF) return -1;
+        return a.numeroAHF.localeCompare(b.numeroAHF, undefined, { numeric: true });
+      }),
+    [hotels],
+  );
+
   return (
     <main className="min-h-screen" style={{ background: "var(--color-night)" }}>
+      <HotelDrawer hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
 
       {/* Hero */}
       <section
@@ -270,16 +315,15 @@ export default function MembresGrid({ hotels }: Props) {
             <span
               className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0"
               style={{
-                background:
-                  "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
+                background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
                 color: "#07120A",
               }}
             >
-              {hotels.length}
+              {sorted.length}
             </span>
-            hôtel{hotels.length > 1 ? "s" : ""} membre
-            {hotels.length > 1 ? "s" : ""} certifié
-            {hotels.length > 1 ? "s" : ""}
+            hôtel{sorted.length > 1 ? "s" : ""} membre
+            {sorted.length > 1 ? "s" : ""} certifié
+            {sorted.length > 1 ? "s" : ""}
           </div>
         </div>
       </section>
@@ -287,7 +331,7 @@ export default function MembresGrid({ hotels }: Props) {
       {/* Grid */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-5 md:px-10">
-          {hotels.length === 0 ? (
+          {sorted.length === 0 ? (
             <p
               className="text-center py-24 text-base"
               style={{ color: "rgba(255,255,255,.32)", fontFamily: "var(--font-body)" }}
@@ -296,8 +340,8 @@ export default function MembresGrid({ hotels }: Props) {
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {hotels.map((hotel) => (
-                <MemberCard key={hotel.id} hotel={hotel} />
+              {sorted.map((hotel) => (
+                <MemberCard key={hotel.id} hotel={hotel} onSelect={setSelectedHotel} />
               ))}
             </div>
           )}
