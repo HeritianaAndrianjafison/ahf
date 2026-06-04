@@ -315,7 +315,7 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
 
 /* ── Carte membre accordion ──────────────────────────────────────── */
 function MemberCard({
-  hotel, cover, thumb, isActive, onActivate, onViewProfile, reduceMotion,
+  hotel, cover, thumb, isActive, onActivate, onViewProfile, reduceMotion, isMobile,
 }: {
   hotel: HotelAHF;
   cover: string;
@@ -324,9 +324,13 @@ function MemberCard({
   onActivate: () => void;
   onViewProfile: () => void;
   reduceMotion: boolean;
+  isMobile: boolean;
 }) {
   const raw  = hotel.description ?? hotel.adresse ?? "Hôtel membre certifié AHF · Foulpointe";
-  const desc = raw.length > 110 ? raw.slice(0, 110) + "…" : raw;
+  const desc = raw.length > (isMobile ? 80 : 110) ? raw.slice(0, isMobile ? 80 : 110) + "…" : raw;
+
+  const activeWidth = isMobile ? "calc(100vw - 2.5rem)" : "30rem";
+  const inactiveWidth = isMobile ? "3.5rem" : "5rem";
 
   const cardTransition = reduceMotion ? "none"
     : "flex-basis 0.55s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.55s ease";
@@ -346,7 +350,7 @@ function MemberCard({
       style={{
         position: "relative",
         flexShrink: 0,
-        flexBasis: isActive ? "30rem" : "5rem",
+        flexBasis: isActive ? activeWidth : inactiveWidth,
         height: "26rem",
         borderRadius: "1.1rem",
         overflow: "hidden",
@@ -404,15 +408,16 @@ function MemberCard({
           inset: 0,
           zIndex: 2,
           display: "flex",
-          flexDirection: isActive ? "row" : "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: isActive ? "1.25rem 1.75rem" : "0",
-          gap: isActive ? "1.25rem" : "0.7rem",
+          flexDirection: isActive && !isMobile ? "row" : "column",
+          alignItems: isActive && isMobile ? "flex-start" : "center",
+          justifyContent: isActive && isMobile ? "flex-start" : "center",
+          padding: isActive ? (isMobile ? "1rem 1.25rem" : "1.25rem 1.75rem") : "0",
+          gap: isActive ? (isMobile ? "0.55rem" : "1.25rem") : "0.7rem",
+          overflow: "hidden",
         }}
       >
-        {/* Thumbnail portrait — active seulement */}
-        {isActive && (
+        {/* Thumbnail portrait — active + desktop seulement */}
+        {isActive && !isMobile && (
           <div style={{
             position: "relative",
             flexShrink: 0,
@@ -454,7 +459,7 @@ function MemberCard({
             style={{
               color: "#fff",
               fontWeight: 700,
-              fontSize: isActive ? "2.1rem" : "1.25rem",
+              fontSize: isActive ? (isMobile ? "1.5rem" : "2.1rem") : "1.25rem",
               writingMode: isActive ? "horizontal-tb" : "vertical-rl",
               transform: isActive ? "none" : "rotate(180deg)",
               letterSpacing: isActive ? "-0.025em" : "0.04em",
@@ -483,9 +488,9 @@ function MemberCard({
 
               <p style={{
                 color: "rgba(255,255,255,.75)",
-                fontSize: "0.92rem",
-                lineHeight: 1.56,
-                maxWidth: "17rem",
+                fontSize: isMobile ? "0.82rem" : "0.92rem",
+                lineHeight: 1.5,
+                maxWidth: isMobile ? "100%" : "17rem",
                 fontFamily: "var(--font-body)",
               }}>
                 {desc}
@@ -535,6 +540,7 @@ function MemberCard({
 function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: HotelAHF) => void }) {
   const [activeIdx,   setActiveIdx]   = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const outerRef   = useRef<HTMLDivElement>(null);
   const touchStart = useRef({ x: 0, y: 0 });
 
@@ -543,6 +549,15 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReduceMotion(mq.matches);
     const fn = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+
+  /* Détection mobile */
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    setIsMobile(mq.matches);
+    const fn = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", fn);
     return () => mq.removeEventListener("change", fn);
   }, []);
@@ -713,6 +728,7 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
               onActivate={() => setActiveIdx(i)}
               onViewProfile={() => onSelect(hotel)}
               reduceMotion={reduceMotion}
+              isMobile={isMobile}
             />
           ))}
         </div>
