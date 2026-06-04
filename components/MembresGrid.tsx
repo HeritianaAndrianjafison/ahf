@@ -59,7 +59,7 @@ function MemberCard({
         />
 
         {/* Numéro AHF + Nom — haut gauche en ligne */}
-        <div className="absolute top-3 left-3 right-14 flex items-center gap-2">
+        <div className="absolute top-3 left-3 right-3 flex items-center gap-2">
           {hotel.numeroAHF && (
             <div
               className="text-[15px] font-black tracking-wider uppercase px-3 py-1.5 rounded-full shrink-0"
@@ -76,18 +76,6 @@ function MemberCard({
             style={{ textShadow: "0 2px 12px rgba(0,0,0,.80)" }}>
             {hotel.nom}
           </h3>
-        </div>
-
-        {/* Certifié AHF badge */}
-        <div
-          className="absolute top-3 right-3 text-[9px] font-bold tracking-[0.18em] uppercase px-2.5 py-1 rounded-full"
-          style={{
-            background: "rgba(7,9,13,.78)",
-            color: "var(--color-gold-l)",
-            border: "1px solid rgba(200,169,110,.32)",
-          }}
-        >
-          Certifié AHF
         </div>
       </div>
 

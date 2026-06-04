@@ -71,7 +71,7 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
           style={{ background: "linear-gradient(to bottom, rgba(7,15,24,.10) 0%, rgba(7,15,24,.05) 35%, rgba(7,15,24,.88) 100%)" }} />
 
         {/* Numéro AHF + Nom — haut gauche en ligne */}
-        <div className="absolute top-3 left-3 right-10 flex items-center gap-2">
+        <div className="absolute top-3 left-3 right-3 flex items-center gap-2">
           {hotel.numeroAHF && (
             <div className="px-3 py-1.5 rounded-full text-[15px] font-black tracking-wider uppercase shrink-0"
               style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 4px 16px rgba(200,169,110,.45)" }}>
@@ -82,12 +82,6 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
             style={{ fontSize: "1rem", textShadow: "0 2px 12px rgba(0,0,0,.80)" }}>
             {hotel.nom}
           </h3>
-        </div>
-
-        {/* Badge AHF — haut droit */}
-        <div className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase"
-          style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 3px 12px rgba(200,169,110,.45)" }}>
-          AHF
         </div>
       </div>
 
