@@ -72,8 +72,8 @@ function MemberCard({
               #{hotel.numeroAHF}
             </div>
           )}
-          <h3 className="font-display font-bold text-white text-base leading-snug line-clamp-1 min-w-0"
-            style={{ textShadow: "0 2px 12px rgba(0,0,0,.80)" }}>
+          <h3 className="font-display font-bold text-white text-base leading-snug line-clamp-1 min-w-0 px-2 py-0.5 rounded-md"
+            style={{ background: "rgba(0,0,0,.55)", backdropFilter: "blur(4px)" }}>
             {hotel.nom}
           </h3>
         </div>
