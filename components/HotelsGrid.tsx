@@ -16,7 +16,7 @@ const MIN_LOOP = 8;    // nb min de cartes uniques pour un rendu sans vide
 const PX_PER_S = 72;   // vitesse du ticker (pixels par seconde)
 
 const FALLBACK =
-  "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&auto=format&fit=crop";
+  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop";
 
 interface HotelsGridProps { hotels: HotelAHF[] }
 
