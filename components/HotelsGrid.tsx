@@ -1083,6 +1083,15 @@ export default function HotelsGrid({ hotels }: HotelsGridProps) {
     }),
   [hotels]);
 
+  /* Membres "complets" : ≥ 2 photos + description non vide + Facebook ou site web */
+  const featured = useMemo(() =>
+    sorted.filter(h =>
+      h.photos.length >= 2 &&
+      h.description.trim().length > 0 &&
+      (h.facebook || h.siteWeb),
+    ),
+  [sorted]);
+
   return (
     <>
       <HotelDrawer hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />
@@ -1150,7 +1159,7 @@ export default function HotelsGrid({ hotels }: HotelsGridProps) {
         </div>
       </section>
 
-      <MembersSlider hotels={sorted} onSelect={setSelectedHotel} />
+      <MembersSlider hotels={featured} onSelect={setSelectedHotel} />
     </>
   );
 }
