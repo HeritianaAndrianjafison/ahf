@@ -62,8 +62,8 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
 
         {/* Numéro AHF — haut gauche */}
         {hotel.numeroAHF && (
-          <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-[15px] font-black tracking-wider uppercase"
-            style={{ background: "rgba(9,21,39,.85)", border: "1.5px solid rgba(200,169,110,.60)", color: "rgba(200,169,110,1)", backdropFilter: "blur(10px)", boxShadow: "0 2px 12px rgba(200,169,110,.30)" }}>
+          <div className="absolute top-3 left-3 px-3.5 py-2 rounded-xl text-[20px] font-black tracking-wide uppercase"
+            style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 4px 18px rgba(200,169,110,.55)", lineHeight: 1 }}>
             {hotel.numeroAHF}
           </div>
         )}
