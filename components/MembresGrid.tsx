@@ -61,10 +61,11 @@ function MemberCard({
         {/* numeroAHF badge */}
         {hotel.numeroAHF && (
           <div
-            className="absolute top-3 left-3 text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full"
+            className="absolute top-3 left-3 text-[15px] font-black tracking-wider uppercase px-3 py-1.5 rounded-full"
             style={{
               background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
               color: "#07120A",
+              boxShadow: "0 4px 16px rgba(200,169,110,.45)",
             }}
           >
             #{hotel.numeroAHF}

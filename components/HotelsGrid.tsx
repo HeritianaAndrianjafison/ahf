@@ -62,8 +62,8 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
 
         {/* Numéro AHF — haut gauche */}
         {hotel.numeroAHF && (
-          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-black tracking-widest uppercase"
-            style={{ background: "rgba(9,21,39,.78)", border: "1px solid rgba(200,169,110,.40)", color: "rgba(200,169,110,.95)", backdropFilter: "blur(10px)" }}>
+          <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-[15px] font-black tracking-wider uppercase"
+            style={{ background: "rgba(9,21,39,.85)", border: "1.5px solid rgba(200,169,110,.60)", color: "rgba(200,169,110,1)", backdropFilter: "blur(10px)", boxShadow: "0 2px 12px rgba(200,169,110,.30)" }}>
             {hotel.numeroAHF}
           </div>
         )}
@@ -439,15 +439,15 @@ function MemberCard({
             <div style={{
               display: "inline-flex",
               alignSelf: "flex-start",
-              padding: "0.18rem 0.68rem",
+              padding: "0.3rem 0.9rem",
               borderRadius: "9999px",
-              background: "rgba(7,9,13,.82)",
-              border: "1px solid rgba(200,169,110,.40)",
-              color: "rgba(200,169,110,.92)",
-              fontSize: "0.68rem",
-              fontWeight: 800,
-              letterSpacing: "0.22em",
+              background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
+              color: "#07120A",
+              fontSize: "1rem",
+              fontWeight: 900,
+              letterSpacing: "0.15em",
               textTransform: "uppercase" as const,
+              boxShadow: "0 4px 16px rgba(200,169,110,.45)",
             }}>
               {hotel.numeroAHF}
             </div>
