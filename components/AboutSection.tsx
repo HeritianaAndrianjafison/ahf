@@ -61,27 +61,6 @@ export default function AboutSection() {
               chaleureux et d'une immersion authentique dans la beauté de Foulpointe.
             </p>
 
-            <div className="mt-10 grid grid-cols-1 gap-5">
-              {[
-                { num: "2021", label: "Année de création" },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="p-5 rounded-2xl"
-                  style={{
-                    background: "rgba(200,169,110,.07)",
-                    border: "1px solid rgba(200,169,110,.18)",
-                  }}
-                >
-                  <div className="font-display font-black text-3xl" style={{ color: "var(--color-gold)" }}>
-                    {s.num}
-                  </div>
-                  <div className="text-xs uppercase tracking-widest mt-1" style={{ color: "rgba(255,255,255,.32)" }}>
-                    {s.label}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Droite — valeurs */}
