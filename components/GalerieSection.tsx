@@ -42,6 +42,24 @@ const PLACEHOLDER_STRIP = [
   { src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=75&auto=format&fit=crop", alt: "Voyageurs profitant du soleil à Foulpointe" },
 ];
 
+function PhotoLabel({ label }: { label: string }) {
+  return (
+    <div className="absolute bottom-4 left-4">
+      <span
+        className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full"
+        style={{
+          background: "rgba(7,15,24,.82)",
+          color: "var(--color-gold-l)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid rgba(200,169,110,.22)",
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export default function GalerieSection({ photos }: GalerieSectionProps) {
   const sorted = [...photos].sort((a, b) => a.ordre - b.ordre);
 
@@ -57,34 +75,93 @@ export default function GalerieSection({ photos }: GalerieSectionProps) {
   const stripImages = Array.from({ length: 6 }, (_, i) => getPhoto(i + 5));
 
   return (
-    <section className="py-24 overflow-hidden" style={{ background: "#0B2133" }}>
-      <div className="max-w-7xl mx-auto px-5 md:px-10">
+    <section className="py-16 md:py-24 overflow-hidden" style={{ background: "#0B2133" }}>
+      <div className="max-w-7xl mx-auto px-4 md:px-10">
 
         {/* Header */}
-        <div className="text-center mb-14 reveal">
+        <div className="text-center mb-10 md:mb-14 reveal">
           <div className="inline-flex items-center gap-3 mb-5">
-            <div className="h-px w-12" style={{ background: "rgba(200,169,110,.45)" }} aria-hidden="true" />
+            <div className="h-px w-8 md:w-12" style={{ background: "rgba(200,169,110,.45)" }} aria-hidden="true" />
             <span className="text-xs font-bold tracking-[0.3em] uppercase" style={{ color: "var(--color-gold)" }}>
               Foulpointe en images
             </span>
-            <div className="h-px w-12" style={{ background: "rgba(200,169,110,.45)" }} aria-hidden="true" />
+            <div className="h-px w-8 md:w-12" style={{ background: "rgba(200,169,110,.45)" }} aria-hidden="true" />
           </div>
           <h2
             className="font-display font-black text-white leading-tight mb-4"
-            style={{ fontSize: "clamp(2rem, 5vw, 3.8rem)", letterSpacing: "-0.02em" }}
+            style={{ fontSize: "clamp(1.8rem, 5vw, 3.8rem)", letterSpacing: "-0.02em" }}
           >
             La mer, le soleil<br />
             <span style={{ color: "var(--color-gold-l)" }}>& la nature</span>
           </h2>
-          <p className="max-w-xl mx-auto leading-relaxed" style={{ fontFamily: "var(--font-body)", color: "rgba(255,255,255,.50)" }}>
+          <p
+            className="max-w-xl mx-auto leading-relaxed text-sm md:text-base"
+            style={{ fontFamily: "var(--font-body)", color: "rgba(255,255,255,.50)" }}
+          >
             Plages de sable, eaux turquoise, forêts tropicales et bungalows de charme —
             Foulpointe vous attend pour un séjour inoubliable.
           </p>
         </div>
 
-        {/* Main mosaic grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 reveal" style={{ gridTemplateRows: "260px 260px" }}>
+        {/* ── MOBILE layout (< md): stacked grid ── */}
+        <div className="md:hidden flex flex-col gap-3 reveal">
 
+          {/* Hero image — full width */}
+          <div className="relative w-full rounded-2xl overflow-hidden group cursor-pointer" style={{ height: 220 }}>
+            <Image
+              src={mainImages[0].src}
+              alt={mainImages[0].alt}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              sizes="100vw"
+              priority
+            />
+            <div
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(to top, rgba(7,18,9,.70) 0%, transparent 52%)" }}
+            />
+            {mainImages[0].label && (
+              <div className="absolute bottom-4 left-4">
+                <span
+                  className="text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full"
+                  style={{ background: "rgba(200,169,110,.88)", color: "#071209" }}
+                >
+                  {mainImages[0].label}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* 2×2 grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {mainImages.slice(1).map((img, i) => (
+              <div
+                key={i}
+                className="relative rounded-2xl overflow-hidden group cursor-pointer"
+                style={{ height: 140 }}
+              >
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="50vw"
+                />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: "rgba(200,169,110,.18)" }}
+                />
+                {img.label && <PhotoLabel label={img.label} />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── DESKTOP layout (≥ md): mosaic with row-span ── */}
+        <div
+          className="hidden md:grid md:grid-cols-3 gap-4 reveal"
+          style={{ gridTemplateRows: "260px 260px" }}
+        >
           {/* Position 0 — large image, spans 2 rows */}
           <div className="relative row-span-2 rounded-3xl overflow-hidden group cursor-pointer">
             <Image
@@ -92,7 +169,8 @@ export default function GalerieSection({ photos }: GalerieSectionProps) {
               alt={mainImages[0].alt}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"
-              sizes="(max-width: 768px) 50vw, 33vw"
+              sizes="33vw"
+              priority
             />
             <div
               className="absolute inset-0 transition-opacity duration-300 group-hover:opacity-80"
@@ -110,7 +188,7 @@ export default function GalerieSection({ photos }: GalerieSectionProps) {
             )}
           </div>
 
-          {/* Positions 1–4 — small grid images */}
+          {/* Positions 1–4 */}
           {mainImages.slice(1).map((img, i) => (
             <div key={i} className="relative rounded-3xl overflow-hidden group cursor-pointer">
               <Image
@@ -118,40 +196,31 @@ export default function GalerieSection({ photos }: GalerieSectionProps) {
                 alt={img.alt}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, 33vw"
+                sizes="33vw"
               />
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{ background: "rgba(200,169,110,.18)" }}
               />
-              {img.label && (
-                <div className="absolute bottom-4 left-4">
-                  <span
-                    className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full"
-                    style={{
-                      background: "rgba(7,15,24,.80)",
-                      color: "var(--color-gold-l)",
-                      backdropFilter: "blur(8px)",
-                    }}
-                  >
-                    {img.label}
-                  </span>
-                </div>
-              )}
+              {img.label && <PhotoLabel label={img.label} />}
             </div>
           ))}
         </div>
 
-        {/* Positions 5–10 — horizontal strip */}
-        <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4 reveal">
+        {/* Strip — 2 cols mobile → 3 cols sm → 6 cols desktop */}
+        <div className="mt-3 md:mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 md:gap-4 reveal">
           {stripImages.map((img, i) => (
-            <div key={i} className="relative h-28 rounded-2xl overflow-hidden group cursor-pointer">
+            <div
+              key={i}
+              className="relative rounded-2xl overflow-hidden group cursor-pointer"
+              style={{ height: 100 }}
+            >
               <Image
                 src={img.src}
                 alt={img.alt}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
-                sizes="(max-width: 768px) 33vw, 16vw"
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 16vw"
               />
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
