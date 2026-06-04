@@ -16,7 +16,7 @@ interface HotelsGridProps { hotels: HotelAHF[] }
 
 /* ── Carte ───────────────────────────────────────────────────────── */
 function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAHF) => void }) {
-  const cover = hotel.photoCouverture ?? FALLBACK;
+  const cover = hotel.photoCouverture ?? null;
   return (
     <article
       onClick={() => onSelect(hotel)}
@@ -48,17 +48,27 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
       <div className="absolute top-0 left-[8%] right-[8%] h-px pointer-events-none z-10"
         style={{ background: "linear-gradient(90deg, transparent, rgba(200,169,110,.55) 40%, rgba(226,201,142,.45) 60%, transparent)" }} />
 
-      {/* Image */}
+      {/* Image ou initiale */}
       <div className="relative overflow-hidden shrink-0" style={{ height: 190 }}>
-        <Image
-          src={cover}
-          alt={`Photo de ${hotel.nom}`}
-          fill
-          className="object-cover transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-          sizes="300px"
-        />
+        {cover ? (
+          <Image
+            src={cover}
+            alt={`Photo de ${hotel.nom}`}
+            fill
+            className="object-cover transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+            sizes="300px"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #091929, #0D2438)" }}>
+            <span className="font-display font-black select-none"
+              style={{ fontSize: "7rem", lineHeight: 1, color: "rgba(200,169,110,.28)", letterSpacing: "-0.04em" }}>
+              {hotel.nom.charAt(0)}
+            </span>
+          </div>
+        )}
         <div className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(7,15,24,.15) 0%, rgba(7,15,24,.08) 35%, rgba(7,15,24,.90) 100%)" }} />
+          style={{ background: "linear-gradient(to bottom, rgba(7,15,24,.10) 0%, rgba(7,15,24,.05) 35%, rgba(7,15,24,.88) 100%)" }} />
 
         {/* Numéro AHF — haut gauche */}
         {hotel.numeroAHF && (
@@ -376,19 +386,32 @@ function MemberCard({
         />
       )}
 
-      {/* Image de fond */}
-      <Image
-        src={cover}
-        alt={`Couverture ${hotel.nom}`}
-        fill
-        className="object-cover"
-        sizes="(max-width: 768px) 90vw, 480px"
-        style={{
-          filter: isActive ? "brightness(0.80) saturate(110%)" : "brightness(0.55) saturate(60%)",
-          transform: isActive ? "scale(1.05)" : "scale(1)",
-          transition: imgTransition,
-        }}
-      />
+      {/* Image de fond ou initiale */}
+      {cover ? (
+        <Image
+          src={cover}
+          alt={`Couverture ${hotel.nom}`}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 90vw, 480px"
+          style={{
+            filter: isActive ? "brightness(0.80) saturate(110%)" : "brightness(0.55) saturate(60%)",
+            transform: isActive ? "scale(1.05)" : "scale(1)",
+            transition: imgTransition,
+          }}
+        />
+      ) : (
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(135deg, #091929, #0D2438)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <span className="font-display font-black select-none"
+            style={{ fontSize: "9rem", lineHeight: 1, color: "rgba(200,169,110,.22)", letterSpacing: "-0.04em" }}>
+            {hotel.nom.charAt(0)}
+          </span>
+        </div>
+      )}
 
       {/* Gradient overlay */}
       <div
@@ -427,7 +450,20 @@ function MemberCard({
             overflow: "hidden",
             boxShadow: "0 8px 28px rgba(0,0,0,.55), 0 0 0 1px rgba(200,169,110,.28)",
           }}>
-            <Image src={thumb} alt={`Photo ${hotel.nom}`} fill className="object-cover" sizes="120px" />
+            {thumb ? (
+              <Image src={thumb} alt={`Photo ${hotel.nom}`} fill className="object-cover" sizes="120px" />
+            ) : (
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(135deg, #091929, #0D2438)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span className="font-display font-black select-none"
+                  style={{ fontSize: "3.5rem", lineHeight: 1, color: "rgba(200,169,110,.30)" }}>
+                  {hotel.nom.charAt(0)}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -722,8 +758,8 @@ function MembersSlider({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h:
             <MemberCard
               key={hotel.id}
               hotel={hotel}
-              cover={hotel.photoCouverture ?? FALLBACK}
-              thumb={hotel.photos[1] ?? hotel.photos[0] ?? hotel.photoCouverture ?? FALLBACK}
+              cover={hotel.photoCouverture ?? ""}
+              thumb={hotel.photos[1] ?? hotel.photos[0] ?? hotel.photoCouverture ?? ""}
               isActive={i === activeIdx}
               onActivate={() => setActiveIdx(i)}
               onViewProfile={() => onSelect(hotel)}

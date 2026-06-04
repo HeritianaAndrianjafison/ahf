@@ -41,8 +41,8 @@ function MemberCard({
             style={{ background: "linear-gradient(135deg, #0D1D26, #122432)" }}
           >
             <span
-              className="font-display font-black"
-              style={{ fontSize: "4rem", color: "rgba(200,169,110,.15)" }}
+              className="font-display font-black select-none"
+              style={{ fontSize: "6rem", color: "rgba(200,169,110,.32)", letterSpacing: "-0.04em" }}
             >
               {hotel.nom.charAt(0)}
             </span>
