@@ -70,32 +70,24 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
         <div className="absolute inset-0"
           style={{ background: "linear-gradient(to bottom, rgba(7,15,24,.10) 0%, rgba(7,15,24,.05) 35%, rgba(7,15,24,.88) 100%)" }} />
 
-        {/* Numéro AHF — haut gauche */}
-        {hotel.numeroAHF && (
-          <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-[15px] font-black tracking-wider uppercase"
-            style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 4px 16px rgba(200,169,110,.45)" }}>
-            #{hotel.numeroAHF}
-          </div>
-        )}
+        {/* Numéro AHF + Nom — haut gauche en ligne */}
+        <div className="absolute top-3 left-3 right-10 flex items-center gap-2">
+          {hotel.numeroAHF && (
+            <div className="px-3 py-1.5 rounded-full text-[15px] font-black tracking-wider uppercase shrink-0"
+              style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 4px 16px rgba(200,169,110,.45)" }}>
+              #{hotel.numeroAHF}
+            </div>
+          )}
+          <h3 className="font-display font-bold text-white leading-snug line-clamp-1 min-w-0"
+            style={{ fontSize: "1rem", textShadow: "0 2px 12px rgba(0,0,0,.80)" }}>
+            {hotel.nom}
+          </h3>
+        </div>
 
         {/* Badge AHF — haut droit */}
         <div className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase"
           style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 3px 12px rgba(200,169,110,.45)" }}>
           AHF
-        </div>
-
-        {/* Nom + adresse */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-8">
-          <h3 className="font-display font-bold text-white leading-snug mb-1 line-clamp-1"
-            style={{ fontSize: "1rem", textShadow: "0 2px 12px rgba(0,0,0,.70)" }}>
-            {hotel.nom}
-          </h3>
-          {hotel.adresse && (
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--color-gold)" }} aria-hidden="true" />
-              <span className="text-[13px] font-medium" style={{ color: "rgba(255,255,255,.62)" }}>{hotel.adresse}</span>
-            </div>
-          )}
         </div>
       </div>
 
