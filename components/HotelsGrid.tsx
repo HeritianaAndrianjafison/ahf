@@ -75,6 +75,11 @@ function HotelDrawer({ hotel, onClose }: { hotel: HotelAHF | null; onClose: () =
 
             <div className="flex flex-col gap-6 p-6 flex-1">
               <div>
+                {hotel.numeroAHF && (
+                  <div className="text-[10px] font-black tracking-[0.25em] uppercase mb-1.5" style={{ color: "rgba(200,169,110,.60)" }}>
+                    Membre {hotel.numeroAHF}
+                  </div>
+                )}
                 <h2 className="font-display font-black text-white text-2xl mb-2 leading-tight" style={{ letterSpacing: "-0.02em" }}>{hotel.nom}</h2>
                 {hotel.adresse && (
                   <div className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,.45)" }}>
@@ -205,7 +210,15 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
         <div className="absolute inset-0"
           style={{ background: "linear-gradient(to bottom, rgba(7,15,24,.15) 0%, rgba(7,15,24,.08) 35%, rgba(7,15,24,.90) 100%)" }} />
 
-        {/* Badge AHF */}
+        {/* Numéro AHF — haut gauche */}
+        {hotel.numeroAHF && (
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-black tracking-widest uppercase"
+            style={{ background: "rgba(9,21,39,.78)", border: "1px solid rgba(200,169,110,.40)", color: "rgba(200,169,110,.95)", backdropFilter: "blur(10px)" }}>
+            {hotel.numeroAHF}
+          </div>
+        )}
+
+        {/* Badge AHF — haut droit */}
         <div className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase"
           style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 3px 12px rgba(200,169,110,.45)" }}>
           AHF
@@ -273,9 +286,13 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
 
 /* ── Carousel infini ─────────────────────────────────────────────── */
 function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: HotelAHF) => void }) {
-  const wrapRef  = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const paused   = useRef(false);
+  const trackRef      = useRef<HTMLDivElement>(null);
+  const posRef        = useRef(0);         // scroll position in px
+  const hoverRef      = useRef(false);     // true while pointer is inside the carousel
+  const resumeAfterRef = useRef<number>(0); // timestamp before which auto-scroll stays paused
+  const rafRef        = useRef<number>(0);
+  const lastTimeRef   = useRef<number>(0);
+  const nudgeRef      = useRef<{ from: number; to: number; start: number; dur: number } | null>(null);
 
   /* Duplication pour remplir sans vide */
   const base = useMemo<HotelAHF[]>(() => {
@@ -286,51 +303,74 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
     return arr;
   }, [hotels]);
 
-  /* Boucle = base × 2, animation translateX(-50%) */
+  /* Boucle = base × 2 */
   const loop = useMemo(() => [...base, ...base], [base]);
 
-  /* Durée = longueur totale d'UNE copie / vitesse */
-  const duration = useMemo(() => {
-    const w = base.length * (CARD_W + CARD_GAP);
-    return Math.round(w / PX_PER_S);
-  }, [base]);
+  /* Largeur d'une copie = point de rebouclage */
+  const baseWidth = useMemo(() => base.length * (CARD_W + CARD_GAP), [base]);
 
-  /* Pause/reprise hover */
-  const setPaused = useCallback((v: boolean) => {
-    paused.current = v;
-    const el = wrapRef.current;
-    if (el) el.classList.toggle("ticker-paused", v);
-  }, []);
+  /* Boucle RAF — pilote le translateX directement en JS */
+  useEffect(() => {
+    if (baseWidth === 0) return;
+    posRef.current = 0;
+    lastTimeRef.current = 0;
 
-  /* Avance manuelle d'une carte */
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    const tick = (time: number) => {
+      const dt = lastTimeRef.current ? Math.min(time - lastTimeRef.current, 50) : 0;
+      lastTimeRef.current = time;
+
+      if (nudgeRef.current) {
+        const { from, to, start, dur } = nudgeRef.current;
+        const t = Math.min((time - start) / dur, 1);
+        posRef.current = from + (to - from) * easeOut(t);
+        if (t >= 1) {
+          /* normalise dans [0, baseWidth) et laisse l'état hover décider de la reprise */
+          posRef.current = ((to % baseWidth) + baseWidth) % baseWidth;
+          nudgeRef.current = null;
+          /* pause 1,5 s après le nudge, même si le pointeur a quitté le carousel */
+          resumeAfterRef.current = time + 1500;
+        }
+      } else {
+        const canScroll = !hoverRef.current && time >= resumeAfterRef.current;
+        if (canScroll) {
+          posRef.current += (PX_PER_S * dt) / 1000;
+          if (posRef.current >= baseWidth) posRef.current -= baseWidth;
+        }
+      }
+
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translateX(-${posRef.current}px)`;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [baseWidth]);
+
+  /* hover/touch — met à jour hoverRef sans bloquer les nudges */
+  const setHover = useCallback((v: boolean) => { hoverRef.current = v; }, []);
+
   const nudge = useCallback((dir: "left" | "right") => {
-    const track = trackRef.current;
-    if (!track) return;
-    /* On lit la position courante via la matrix CSS */
-    const matrix = new DOMMatrix(getComputedStyle(track).transform);
-    const cur = matrix.m41; // translateX courant
-    const step = (CARD_W + CARD_GAP) * (dir === "right" ? -1 : 1);
-    setPaused(true);
-    track.style.transition = "transform .45s cubic-bezier(0.22,1,0.36,1)";
-    track.style.transform  = `translateX(${cur + step}px)`;
-    /* Reprend l'animation depuis cette position après la transition */
-    setTimeout(() => {
-      track.style.transition = "";
-      track.style.transform  = "";
-      setPaused(false);
-    }, 500);
-  }, [setPaused]);
+    const step = (CARD_W + CARD_GAP) * (dir === "right" ? 1 : -1);
+    let from = posRef.current;
+    let to   = from + step;
+    /* si on recule et que ça passe en négatif, on wrape les deux extrémités */
+    if (to < 0) { from += baseWidth; to += baseWidth; posRef.current = from; }
+    nudgeRef.current = { from, to, start: performance.now(), dur: 450 };
+  }, [baseWidth]);
 
   if (loop.length === 0) return null;
 
   return (
     <div
-      ref={wrapRef}
       className="relative overflow-hidden"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setTimeout(() => setPaused(false), 1200)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onTouchStart={() => setHover(true)}
+      onTouchEnd={() => setTimeout(() => setHover(false), 1200)}
     >
       {/* Fondu bords */}
       <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
@@ -347,22 +387,14 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
         <ChevronLeft className="w-5 h-5" />
       </button>
 
-      {/* Track infini */}
+      {/* Track infini — positionné par JS via RAF */}
       <div
         ref={trackRef}
-        className="ticker-track flex py-6"
-        style={{
-          gap: CARD_GAP,
-          paddingInline: CARD_GAP,
-          "--ticker-dur": `${duration}s`,
-        } as React.CSSProperties}
+        className="flex py-6"
+        style={{ gap: CARD_GAP, paddingInline: CARD_GAP, willChange: "transform" } as React.CSSProperties}
       >
         {loop.map((hotel, i) => (
-          <HotelCard
-            key={`${hotel.id}-${i}`}
-            hotel={hotel}
-            onSelect={onSelect}
-          />
+          <HotelCard key={`${hotel.id}-${i}`} hotel={hotel} onSelect={onSelect} />
         ))}
       </div>
 
@@ -375,9 +407,9 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
         <ChevronRight className="w-5 h-5" />
       </button>
 
-      {/* Barre de défilement décorative */}
+      {/* Barre décorative */}
       <div className="mx-auto mt-1 w-24 h-0.5 rounded-full overflow-hidden" style={{ background: "rgba(200,169,110,.12)" }}>
-        <div className="h-full rounded-full" style={{ width: "40%", background: "linear-gradient(90deg, var(--color-gold-d), var(--color-gold))", animation: `ticker ${duration}s linear infinite`, boxShadow: "0 0 6px rgba(200,169,110,.50)" }} />
+        <div className="h-full rounded-full" style={{ width: "40%", background: "linear-gradient(90deg, var(--color-gold-d), var(--color-gold))", boxShadow: "0 0 6px rgba(200,169,110,.50)" }} />
       </div>
     </div>
   );
@@ -386,6 +418,15 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
 /* ── Section principale ──────────────────────────────────────────── */
 export default function HotelsGrid({ hotels }: HotelsGridProps) {
   const [selectedHotel, setSelectedHotel] = useState<HotelAHF | null>(null);
+
+  const sorted = useMemo(() =>
+    [...hotels].sort((a, b) => {
+      if (!a.numeroAHF && !b.numeroAHF) return a.ordre - b.ordre;
+      if (!a.numeroAHF) return 1;
+      if (!b.numeroAHF) return -1;
+      return a.numeroAHF.localeCompare(b.numeroAHF, undefined, { numeric: true });
+    }),
+  [hotels]);
 
   return (
     <>
@@ -432,7 +473,7 @@ export default function HotelsGrid({ hotels }: HotelsGridProps) {
           </div>
 
           {/* Carousel ou état vide */}
-          {hotels.length === 0 ? (
+          {sorted.length === 0 ? (
             <div className="text-center py-16 px-5" style={{ animation: "fadeUp .6s ease both" }}>
               <div className="inline-flex flex-col items-center gap-4 px-8 py-10 rounded-3xl"
                 style={{ background: "rgba(200,169,110,.06)", border: "1px solid rgba(200,169,110,.12)" }}>
@@ -445,7 +486,7 @@ export default function HotelsGrid({ hotels }: HotelsGridProps) {
             </div>
           ) : (
             <div style={{ animation: "fadeUp .7s ease .4s both" }}>
-              <Carousel hotels={hotels} onSelect={setSelectedHotel} />
+              <Carousel hotels={sorted} onSelect={setSelectedHotel} />
               <p className="text-center text-xs mt-4" style={{ color: "rgba(255,255,255,.20)" }}>
                 Survolez ou utilisez les flèches pour naviguer · Cliquez pour voir les détails
               </p>

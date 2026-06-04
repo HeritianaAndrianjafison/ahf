@@ -1,14 +1,19 @@
 import Image from "next/image";
 import { MapPin, ChevronDown, Waves } from "lucide-react";
 
-const HERO_IMAGE =
+const HERO_IMAGE_FALLBACK =
   "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1920&q=85&auto=format&fit=crop";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  coverImage?: string;
+}
+
+export default function HeroSection({ coverImage }: HeroSectionProps) {
+  const heroImage = coverImage || HERO_IMAGE_FALLBACK;
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
       <Image
-        src={HERO_IMAGE}
+        src={heroImage}
         alt="Plage tropicale de Foulpointe, côte Est Madagascar"
         fill priority
         className="object-cover"
@@ -35,8 +40,27 @@ export default function HeroSection() {
 
       <div className="relative z-10 text-center max-w-5xl mx-auto px-5 md:px-10 pt-24">
 
+        {/* Logo AHF */}
+        <div className="flex justify-center mb-7 au1">
+          <div
+            className="rounded-3xl overflow-hidden"
+            style={{
+              boxShadow: "0 16px 60px rgba(200,169,110,.40), 0 0 0 3px rgba(200,169,110,.35)",
+            }}
+          >
+            <Image
+              src="/logo ahf.jpeg"
+              alt="Logo AHF — Association Hôtelière de Foulpointe"
+              width={400}
+              height={215}
+              className="block w-72 md:w-96 h-auto"
+              priority
+            />
+          </div>
+        </div>
+
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 mb-8 au1">
+        <div className="inline-flex items-center gap-2 mb-8 au2">
           <div
             className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-widest uppercase"
             style={{
@@ -53,7 +77,7 @@ export default function HeroSection() {
 
         {/* Titre */}
         <h1
-          className="font-display font-black leading-[0.95] mb-6 au2"
+          className="font-display font-black leading-[0.95] mb-6 au3"
           style={{
             fontSize: "clamp(2.8rem, 9vw, 8rem)",
             letterSpacing: "-0.03em",
@@ -62,14 +86,14 @@ export default function HeroSection() {
         >
           <span className="text-white">Association</span>
           <br />
-          <span style={{ color: "var(--color-gold-l)" }}>des Hôtels</span>
+          <span style={{ color: "var(--color-gold-l)" }}>Hôtelière</span>
           <br />
           <span className="text-white">de Foulpointe</span>
         </h1>
 
         {/* Sous-titre */}
         <p
-          className="leading-relaxed max-w-2xl mx-auto mb-10 au3"
+          className="leading-relaxed max-w-2xl mx-auto mb-10 au4"
           style={{
             fontFamily: "var(--font-body)",
             fontSize: "1.1rem",
@@ -83,7 +107,7 @@ export default function HeroSection() {
         </p>
 
         {/* CTA */}
-        <div className="flex flex-wrap items-center justify-center gap-4 au4">
+        <div className="flex flex-wrap items-center justify-center gap-4 au5">
           <a
             href="#hotels"
             className="flex items-center gap-2 font-bold rounded-full px-8 transition-all duration-200 cursor-pointer hover:opacity-90 hover:scale-105"
@@ -114,7 +138,7 @@ export default function HeroSection() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg mx-auto au5">
+        <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg mx-auto au6">
           {[
             { value: "AHF",  label: "Certifié" },
             { value: "100%", label: "Qualité garantie" },

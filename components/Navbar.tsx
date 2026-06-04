@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -34,21 +35,23 @@ export default function Navbar() {
 
           {/* Logo */}
           <a href="#" className="flex items-center gap-3 group" aria-label="AHF Foulpointe — Accueil">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{
-                background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))",
-                boxShadow: "0 4px 16px rgba(200,169,110,.30)",
-              }}
+            <div className="rounded-xl overflow-hidden shrink-0"
+              style={{ boxShadow: "0 2px 12px rgba(200,169,110,.25)" }}
             >
-              <span className="font-display font-black text-sm leading-none select-none" style={{ color: "#07120A" }}>AHF</span>
+              <Image
+                src="/logo ahf.jpeg"
+                alt="Logo AHF"
+                width={120}
+                height={64}
+                className="block h-10 w-auto"
+              />
             </div>
             <div>
               <div className="text-white font-display font-bold text-[1rem] leading-none tracking-wide">
                 AHF Foulpointe
               </div>
               <div className="text-[9px] tracking-[0.25em] uppercase mt-0.5" style={{ color: "var(--color-gold)" }}>
-                Association des Hôtels
+                Association Hôtelière
               </div>
             </div>
           </a>

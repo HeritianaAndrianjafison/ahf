@@ -3,11 +3,11 @@ import "./globals.css";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "AHF — Association des Hôtels de Foulpointe",
+  title: "AHF — Association Hôtelière de Foulpointe",
   description:
-    "Découvrez les hôtels membres de l'Association des Hôtels de Foulpointe (AHF). Hébergements de qualité sur la côte Est de Madagascar.",
+    "Découvrez les hôtels membres de l'Association Hôtelière de Foulpointe (AHF). Hébergements de qualité sur la côte Est de Madagascar.",
   openGraph: {
-    title: "AHF — Association des Hôtels de Foulpointe",
+    title: "AHF — Association Hôtelière de Foulpointe",
     description: "Les meilleurs hôtels de Foulpointe, côte Est Madagascar.",
     siteName: "AHF Foulpointe",
     locale: "fr_FR",
