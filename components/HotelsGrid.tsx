@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import {
   MapPin, Phone, Mail, Globe, X, ArrowUpRight,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Maximize2,
 } from "lucide-react";
 import type { HotelAHF } from "@/lib/api";
 
@@ -35,21 +36,168 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
+/* ── Lightbox photos ─────────────────────────────────────────────── */
+function PhotoLightbox({
+  photos,
+  index,
+  onClose,
+}: {
+  photos: string[];
+  index: number | null;
+  onClose: () => void;
+}) {
+  const [mounted, setMounted]     = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const touchStartX               = useRef<number | null>(null);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    if (index !== null) setActiveIdx(index);
+  }, [index]);
+
+  useEffect(() => {
+    if (index === null) return;
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape")      onClose();
+      if (e.key === "ArrowRight")  setActiveIdx(i => (i + 1) % photos.length);
+      if (e.key === "ArrowLeft")   setActiveIdx(i => (i - 1 + photos.length) % photos.length);
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [index, photos.length, onClose]);
+
+  if (!mounted) return null;
+
+  const open = index !== null;
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Visionneuse de photos"
+      className="fixed inset-0 z-[300] flex flex-col items-center justify-center gap-5 px-4"
+      style={{
+        background: "rgba(0,0,0,0.93)",
+        backdropFilter: "blur(28px)",
+        opacity: open ? 1 : 0,
+        pointerEvents: open ? "auto" : "none",
+        transition: "opacity 0.22s ease",
+      }}
+      onClick={onClose}
+      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+      onTouchEnd={(e) => {
+        if (touchStartX.current === null || photos.length < 2) return;
+        const diff = e.changedTouches[0].clientX - touchStartX.current;
+        if (Math.abs(diff) > 50)
+          setActiveIdx(i => diff < 0 ? (i + 1) % photos.length : (i - 1 + photos.length) % photos.length);
+        touchStartX.current = null;
+      }}
+    >
+      {/* Image card — key change re-déclenche l'animation photoIn */}
+      <div
+        key={activeIdx}
+        className="relative rounded-2xl overflow-hidden"
+        style={{
+          maxWidth: "min(88vw, 860px)",
+          boxShadow: "0 40px 120px rgba(0,0,0,.85), 0 0 0 1px rgba(200,169,110,.15)",
+          animation: open ? "photoIn 0.30s cubic-bezier(0.22,1,0.36,1) both" : "none",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Image
+          src={photos[activeIdx] ?? ""}
+          alt={`Photo ${activeIdx + 1} sur ${photos.length}`}
+          width={860}
+          height={600}
+          className="block max-w-full"
+          style={{ maxHeight: "72vh", width: "auto", height: "auto", objectFit: "contain" }}
+          sizes="(max-width: 900px) 88vw, 860px"
+        />
+
+        {/* Fermer */}
+        <button onClick={onClose} aria-label="Fermer la visionneuse"
+          className="absolute top-3 right-3 z-10 flex items-center justify-center rounded-full cursor-pointer transition-all duration-150 hover:scale-110"
+          style={{ width: 40, height: 40, background: "rgba(0,0,0,.72)", border: "1px solid rgba(255,255,255,.18)", color: "rgba(255,255,255,.88)", backdropFilter: "blur(8px)" }}>
+          <X className="w-4 h-4" />
+        </button>
+
+        {/* Flèches nav */}
+        {photos.length > 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); setActiveIdx(i => (i - 1 + photos.length) % photos.length); }}
+              aria-label="Photo précédente"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center rounded-full cursor-pointer transition-all duration-150 hover:scale-110"
+              style={{ width: 40, height: 40, background: "rgba(0,0,0,.55)", border: "1px solid rgba(255,255,255,.14)", color: "rgba(255,255,255,.80)", backdropFilter: "blur(8px)" }}>
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setActiveIdx(i => (i + 1) % photos.length); }}
+              aria-label="Photo suivante"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center rounded-full cursor-pointer transition-all duration-150 hover:scale-110"
+              style={{ width: 40, height: 40, background: "rgba(0,0,0,.55)", border: "1px solid rgba(255,255,255,.14)", color: "rgba(255,255,255,.80)", backdropFilter: "blur(8px)" }}>
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Compteur + dots de navigation */}
+      {photos.length > 1 && (
+        <div className="flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <p className="text-[11px] font-bold tracking-widest" style={{ color: "rgba(255,255,255,.35)" }}>
+            {activeIdx + 1} / {photos.length}
+          </p>
+          <div className="flex items-center gap-2">
+            {photos.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveIdx(i)}
+                aria-label={`Photo ${i + 1}`}
+                className="rounded-full cursor-pointer transition-all duration-200"
+                style={{
+                  width: i === activeIdx ? 24 : 7,
+                  height: 7,
+                  background: i === activeIdx ? "var(--color-gold)" : "rgba(255,255,255,.22)",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>,
+    document.body,
+  );
+}
+
 /* ── Drawer détail ───────────────────────────────────────────────── */
 function HotelDrawer({ hotel, onClose }: { hotel: HotelAHF | null; onClose: () => void }) {
   const open = hotel !== null;
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
+
+  /* Ferme aussi le lightbox quand le drawer se ferme */
+  useEffect(() => { if (!open) setLightboxIdx(null); }, [open]);
+
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape" && lightboxIdx === null) onClose(); };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
-  }, [onClose]);
+  }, [onClose, lightboxIdx]);
 
   return (
     <>
+      <PhotoLightbox
+        photos={hotel?.photos ?? []}
+        index={lightboxIdx}
+        onClose={() => setLightboxIdx(null)}
+      />
+
       <div className="fixed inset-0 z-[200]"
         style={{ background: "rgba(0,0,0,.75)", backdropFilter: "blur(8px)", opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none", transition: "opacity .3s ease" }}
         onClick={onClose} aria-hidden="true" />
@@ -96,8 +244,36 @@ function HotelDrawer({ hotel, onClose }: { hotel: HotelAHF | null; onClose: () =
                   <p className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: "var(--color-gold)" }}>Photos</p>
                   <div className="grid grid-cols-3 gap-2">
                     {hotel.photos.slice(0, 6).map((url, i) => (
-                      <div key={i} className="relative h-20 rounded-xl overflow-hidden">
-                        <Image src={url} alt={`Photo ${i + 1}`} fill className="object-cover" sizes="150px" />
+                      <div
+                        key={i}
+                        onClick={() => setLightboxIdx(i)}
+                        className="group relative h-20 rounded-xl overflow-hidden cursor-pointer"
+                        style={{ transition: "transform .22s ease, box-shadow .22s ease" }}
+                        onMouseEnter={(e) => {
+                          const el = e.currentTarget as HTMLElement;
+                          el.style.transform = "scale(1.05)";
+                          el.style.boxShadow = "0 8px 24px rgba(0,0,0,.50)";
+                        }}
+                        onMouseLeave={(e) => {
+                          const el = e.currentTarget as HTMLElement;
+                          el.style.transform = "scale(1)";
+                          el.style.boxShadow = "none";
+                        }}
+                      >
+                        <Image
+                          src={url}
+                          alt={`Photo ${i + 1}`}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          sizes="150px"
+                        />
+                        {/* Overlay hover */}
+                        <div
+                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          style={{ background: "rgba(0,0,0,0.40)" }}
+                        >
+                          <Maximize2 className="w-5 h-5 text-white drop-shadow-lg" />
+                        </div>
                       </div>
                     ))}
                   </div>
