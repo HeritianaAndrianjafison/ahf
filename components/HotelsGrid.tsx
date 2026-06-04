@@ -460,17 +460,21 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
   );
 }
 
-/* ── Carousel infini ─────────────────────────────────────────────── */
+/* ── Carousel infini avec drag-to-scroll ────────────────────────── */
 function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: HotelAHF) => void }) {
-  const trackRef      = useRef<HTMLDivElement>(null);
-  const posRef        = useRef(0);         // scroll position in px
-  const hoverRef      = useRef(false);     // true while pointer is inside the carousel
-  const resumeAfterRef = useRef<number>(0); // timestamp before which auto-scroll stays paused
-  const rafRef        = useRef<number>(0);
-  const lastTimeRef   = useRef<number>(0);
-  const nudgeRef      = useRef<{ from: number; to: number; start: number; dur: number } | null>(null);
+  const trackRef       = useRef<HTMLDivElement>(null);
+  const posRef         = useRef(0);
+  const hoverRef       = useRef(false);
+  const resumeAfterRef = useRef<number>(0);
+  const rafRef         = useRef<number>(0);
+  const lastTimeRef    = useRef<number>(0);
+  const nudgeRef       = useRef<{ from: number; to: number; start: number; dur: number } | null>(null);
+  /* drag */
+  const dragRef     = useRef<{ startX: number; startPos: number; lastX: number; velX: number } | null>(null);
+  const velRef      = useRef(0);   // momentum px/ms
+  const dragDistRef = useRef(0);   // distance totale draguée (pour bloquer les clics accidentels)
+  const [grabbing, setGrabbing] = useState(false);
 
-  /* Duplication pour remplir sans vide */
   const base = useMemo<HotelAHF[]>(() => {
     if (hotels.length === 0) return [];
     const copies = Math.ceil(MIN_LOOP / hotels.length);
@@ -479,18 +483,15 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
     return arr;
   }, [hotels]);
 
-  /* Boucle = base × 2 */
-  const loop = useMemo(() => [...base, ...base], [base]);
-
-  /* Largeur d'une copie = point de rebouclage */
+  const loop      = useMemo(() => [...base, ...base], [base]);
   const baseWidth = useMemo(() => base.length * (CARD_W + CARD_GAP), [base]);
 
-  /* Boucle RAF — pilote le translateX directement en JS */
   useEffect(() => {
     if (baseWidth === 0) return;
     posRef.current = 0;
     lastTimeRef.current = 0;
 
+    const norm    = (p: number) => ((p % baseWidth) + baseWidth) % baseWidth;
     const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
     const tick = (time: number) => {
@@ -502,15 +503,20 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
         const t = Math.min((time - start) / dur, 1);
         posRef.current = from + (to - from) * easeOut(t);
         if (t >= 1) {
-          /* normalise dans [0, baseWidth) et laisse l'état hover décider de la reprise */
-          posRef.current = ((to % baseWidth) + baseWidth) % baseWidth;
+          posRef.current = norm(to);
           nudgeRef.current = null;
-          /* pause 1,5 s après le nudge, même si le pointeur a quitté le carousel */
           resumeAfterRef.current = time + 1500;
         }
+      } else if (dragRef.current) {
+        posRef.current = norm(posRef.current); // normalise pendant le drag
+      } else if (Math.abs(velRef.current) > 0.01) {
+        /* momentum après relâchement */
+        posRef.current = norm(posRef.current + velRef.current * dt);
+        velRef.current *= Math.pow(0.95, dt / 16);
+        if (Math.abs(velRef.current) < 0.01) velRef.current = 0;
       } else {
-        const canScroll = !hoverRef.current && time >= resumeAfterRef.current;
-        if (canScroll) {
+        /* défilement automatique */
+        if (!hoverRef.current && time >= resumeAfterRef.current) {
           posRef.current += (PX_PER_S * dt) / 1000;
           if (posRef.current >= baseWidth) posRef.current -= baseWidth;
         }
@@ -526,27 +532,65 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
     return () => cancelAnimationFrame(rafRef.current);
   }, [baseWidth]);
 
-  /* hover/touch — met à jour hoverRef sans bloquer les nudges */
-  const setHover = useCallback((v: boolean) => { hoverRef.current = v; }, []);
+  const norm = useCallback((p: number) => ((p % baseWidth) + baseWidth) % baseWidth, [baseWidth]);
 
   const nudge = useCallback((dir: "left" | "right") => {
+    velRef.current = 0;
     const step = (CARD_W + CARD_GAP) * (dir === "right" ? 1 : -1);
     let from = posRef.current;
     let to   = from + step;
-    /* si on recule et que ça passe en négatif, on wrape les deux extrémités */
     if (to < 0) { from += baseWidth; to += baseWidth; posRef.current = from; }
     nudgeRef.current = { from, to, start: performance.now(), dur: 450 };
   }, [baseWidth]);
+
+  const startDrag = useCallback((clientX: number) => {
+    velRef.current  = 0;
+    nudgeRef.current = null;
+    dragDistRef.current = 0;
+    dragRef.current = { startX: clientX, startPos: posRef.current, lastX: clientX, velX: 0 };
+    hoverRef.current = true;
+    setGrabbing(true);
+  }, []);
+
+  const moveDrag = useCallback((clientX: number) => {
+    if (!dragRef.current) return;
+    const dx = clientX - dragRef.current.lastX;
+    dragRef.current.velX = dx;
+    dragRef.current.lastX = clientX;
+    dragDistRef.current += Math.abs(dx);
+    posRef.current = norm(dragRef.current.startPos - (clientX - dragRef.current.startX));
+  }, [norm]);
+
+  const endDrag = useCallback(() => {
+    if (!dragRef.current) return;
+    velRef.current = -dragRef.current.velX / 16; // momentum initial
+    dragRef.current = null;
+    hoverRef.current = false;
+    setGrabbing(false);
+    resumeAfterRef.current = performance.now() + 2000;
+    setTimeout(() => { dragDistRef.current = 0; }, 150);
+  }, []);
+
+  /* Filtre les clics parasites après un vrai drag */
+  const handleSelect = useCallback((hotel: HotelAHF) => {
+    if (dragDistRef.current > 8) return;
+    onSelect(hotel);
+  }, [onSelect]);
 
   if (loop.length === 0) return null;
 
   return (
     <div
       className="relative overflow-hidden"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onTouchStart={() => setHover(true)}
-      onTouchEnd={() => setTimeout(() => setHover(false), 1200)}
+      style={{ cursor: grabbing ? "grabbing" : "grab", userSelect: "none" }}
+      onMouseEnter={() => { hoverRef.current = true; }}
+      onMouseLeave={() => { hoverRef.current = false; endDrag(); }}
+      onMouseDown={(e) => { if (e.button === 0) { e.preventDefault(); startDrag(e.clientX); } }}
+      onMouseMove={(e) => { if (dragRef.current) moveDrag(e.clientX); }}
+      onMouseUp={() => endDrag()}
+      onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+      onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
+      onTouchEnd={() => endDrag()}
     >
       {/* Fondu bords */}
       <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
@@ -555,7 +599,9 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
         style={{ background: "linear-gradient(to left, #0E2844 0%, transparent 100%)" }} aria-hidden="true" />
 
       {/* Flèche gauche */}
-      <button onClick={() => nudge("left")} aria-label="Précédent"
+      <button
+        onClick={() => nudge("left")} aria-label="Précédent"
+        onMouseDown={(e) => e.stopPropagation()}
         className="absolute left-4 top-1/2 z-20 flex items-center justify-center rounded-full cursor-pointer transition-all duration-200 hover:scale-110"
         style={{ width: 44, height: 44, marginTop: -22, background: "rgba(200,169,110,.15)", border: "1px solid rgba(200,169,110,.35)", color: "var(--color-gold-l)", backdropFilter: "blur(12px)", boxShadow: "0 4px 20px rgba(0,0,0,.35)" }}
         onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))"; el.style.color = "#07120A"; }}
@@ -563,19 +609,21 @@ function Carousel({ hotels, onSelect }: { hotels: HotelAHF[]; onSelect: (h: Hote
         <ChevronLeft className="w-5 h-5" />
       </button>
 
-      {/* Track infini — positionné par JS via RAF */}
+      {/* Track infini */}
       <div
         ref={trackRef}
         className="flex py-6"
         style={{ gap: CARD_GAP, paddingInline: CARD_GAP, willChange: "transform" } as React.CSSProperties}
       >
         {loop.map((hotel, i) => (
-          <HotelCard key={`${hotel.id}-${i}`} hotel={hotel} onSelect={onSelect} />
+          <HotelCard key={`${hotel.id}-${i}`} hotel={hotel} onSelect={handleSelect} />
         ))}
       </div>
 
       {/* Flèche droite */}
-      <button onClick={() => nudge("right")} aria-label="Suivant"
+      <button
+        onClick={() => nudge("right")} aria-label="Suivant"
+        onMouseDown={(e) => e.stopPropagation()}
         className="absolute right-4 top-1/2 z-20 flex items-center justify-center rounded-full cursor-pointer transition-all duration-200 hover:scale-110"
         style={{ width: 44, height: 44, marginTop: -22, background: "rgba(200,169,110,.15)", border: "1px solid rgba(200,169,110,.35)", color: "var(--color-gold-l)", backdropFilter: "blur(12px)", boxShadow: "0 4px 20px rgba(0,0,0,.35)" }}
         onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))"; el.style.color = "#07120A"; }}
