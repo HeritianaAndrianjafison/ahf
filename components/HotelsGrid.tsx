@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
-import { MapPin, Phone, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Phone, ChevronLeft, ChevronRight } from "lucide-react";
 import type { HotelAHF } from "@/lib/api";
 import HotelDrawer, { FALLBACK } from "@/components/HotelDrawer";
 
@@ -17,47 +17,47 @@ interface HotelsGridProps { hotels: HotelAHF[] }
 /* ── Carte ───────────────────────────────────────────────────────── */
 function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAHF) => void }) {
   const cover = hotel.photoCouverture ?? null;
+  const desc  = (hotel.description ?? "").trim();
+
   return (
     <article
       onClick={() => onSelect(hotel)}
-      className="group relative flex flex-col overflow-hidden cursor-pointer select-none"
+      className="hcard select-none"
       style={{
         width: CARD_W,
+        height: 460,
         flexShrink: 0,
         borderRadius: 20,
-        background: "rgba(10,22,38,.88)",
-        border: "1px solid rgba(14,165,233,.18)",
-        boxShadow: "0 8px 32px rgba(0,0,0,.30), inset 0 1px 0 rgba(14,165,233,.10)",
-        backdropFilter: "blur(20px)",
-        transition: "border-color .3s, box-shadow .35s, transform .35s",
+        background: "linear-gradient(135deg, #091929, #0D2438)",
+        border: "1px solid rgba(200,169,110,.14)",
+        boxShadow: "0 15px 35px rgba(0,0,0,.32)",
+        cursor: "pointer",
+        transition: "transform 0.5s ease, box-shadow 0.5s ease",
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement;
-        el.style.borderColor = "rgba(14,165,233,.48)";
-        el.style.boxShadow = "0 24px 64px rgba(0,0,0,.50), 0 0 40px rgba(14,165,233,.14), inset 0 1px 0 rgba(14,165,233,.24)";
-        el.style.transform = "translateY(-8px) scale(1.01)";
+        el.style.transform = "translateY(-10px)";
+        el.style.boxShadow = "0 28px 56px rgba(0,0,0,.52), 0 0 40px rgba(200,169,110,.10)";
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLElement;
-        el.style.borderColor = "rgba(14,165,233,.18)";
-        el.style.boxShadow = "0 8px 32px rgba(0,0,0,.30), inset 0 1px 0 rgba(14,165,233,.10)";
-        el.style.transform = "translateY(0) scale(1)";
+        el.style.transform = "translateY(0)";
+        el.style.boxShadow = "0 15px 35px rgba(0,0,0,.32)";
       }}
     >
-      {/* Ligne or signature AHF */}
-      <div className="absolute top-0 left-[8%] right-[8%] h-px pointer-events-none z-10"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(200,169,110,.55) 40%, rgba(226,201,142,.45) 60%, transparent)" }} />
+      {/* Shapes décoratives */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0, pointerEvents: "none" }}>
+        <div className="hcard-shape hcard-s1" />
+        <div className="hcard-shape hcard-s2" />
+        <div className="hcard-shape hcard-s3" />
+      </div>
 
       {/* Image ou initiale */}
-      <div className="relative overflow-hidden shrink-0" style={{ height: 190 }}>
+      <div className="hcard-image">
         {cover ? (
-          <Image
-            src={cover}
-            alt={`Photo de ${hotel.nom}`}
-            fill
-            className="object-cover transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-            sizes="300px"
-          />
+          <div style={{ position: "relative", width: "100%", height: "100%" }}>
+            <Image src={cover} alt={`Photo de ${hotel.nom}`} fill className="object-cover" sizes="300px" />
+          </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center"
             style={{ background: "linear-gradient(135deg, #091929, #0D2438)" }}>
@@ -67,63 +67,52 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
             </span>
           </div>
         )}
-        <div className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(7,15,24,.10) 0%, rgba(7,15,24,.05) 35%, rgba(7,15,24,.88) 100%)" }} />
-
-        {/* Numéro AHF + Nom — haut gauche en ligne */}
-        <div className="absolute top-3 left-3 right-3 flex items-center gap-2">
-          {hotel.numeroAHF && (
-            <div className="px-3 py-1.5 rounded-full text-[15px] font-black tracking-wider uppercase shrink-0"
-              style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A", boxShadow: "0 4px 16px rgba(200,169,110,.45)" }}>
-              #{hotel.numeroAHF}
-            </div>
-          )}
-          <h3 className="font-display font-bold text-white leading-snug line-clamp-1 min-w-0 px-2 py-0.5 rounded-md"
-            style={{ fontSize: "1rem", background: "rgba(0,0,0,.55)", backdropFilter: "blur(4px)" }}>
-            {hotel.nom}
-          </h3>
-        </div>
       </div>
 
-      {/* Corps */}
-      <div className="flex flex-col flex-1 px-4 py-3.5 gap-3">
-        <p className="text-[12.5px] leading-relaxed line-clamp-2 flex-1"
-          style={{ color: "rgba(255,255,255,.48)", fontFamily: "var(--font-body)" }}>
-          {hotel.description}
-        </p>
+      {/* Gradient overlay */}
+      <div className="hcard-overlay" aria-hidden="true" />
 
+      {/* Header : badge (révélé) + nom + adresse */}
+      <div className="hcard-header">
+        {hotel.numeroAHF && (
+          <div className="hcard-tag"
+            style={{ background: "linear-gradient(135deg, var(--color-gold-d), var(--color-gold))", color: "#07120A" }}>
+            #{hotel.numeroAHF}
+          </div>
+        )}
+        <h3 className="font-display font-bold text-white leading-snug"
+          style={{ fontSize: "1.25rem", marginBottom: hotel.adresse ? 4 : 0 }}>
+          {hotel.nom}
+        </h3>
+        {hotel.adresse && (
+          <p style={{ fontSize: "0.77rem", color: "rgba(255,255,255,.52)", display: "flex", alignItems: "center", gap: 5 }}>
+            <MapPin style={{ width: 11, height: 11, flexShrink: 0, color: "var(--color-gold)" }} aria-hidden="true" />
+            {hotel.adresse}
+          </p>
+        )}
+      </div>
+
+      {/* Contenu révélé au hover */}
+      <div className="hcard-content">
+        {desc.length > 0 && (
+          <p className="hcard-desc" style={{ color: "rgba(255,255,255,.72)", fontFamily: "var(--font-body)" }}>
+            {desc.length > 95 ? desc.slice(0, 95) + "…" : desc}
+          </p>
+        )}
         {hotel.telephone && (
           <a href={`tel:${hotel.telephone.replace(/\s/g, "")}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 text-xs font-semibold w-fit hover:opacity-70 cursor-pointer transition-opacity duration-200"
-            style={{ color: "#5EEAD4" }}>
-            <Phone className="w-3.5 h-3.5" aria-hidden="true" />
+            className="hcard-phone flex items-center gap-2 text-sm font-semibold cursor-pointer hover:opacity-70 transition-opacity"
+            style={{ color: "#67E8F9" }}>
+            <Phone className="w-4 h-4" aria-hidden="true" />
             {hotel.telephone}
           </a>
         )}
-
-        <div className="h-px" style={{ background: "rgba(14,165,233,.12)" }} />
-
-        {/* CTA */}
         <button
           onClick={(e) => { e.stopPropagation(); onSelect(hotel); }}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer"
-          style={{ background: "rgba(14,165,233,.10)", border: "1px solid rgba(14,165,233,.22)", color: "#5EEAD4", transition: "background .2s, color .2s, border-color .2s" }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.background = "linear-gradient(135deg, var(--color-ocean-deep), var(--color-ocean))";
-            el.style.color = "#fff";
-            el.style.borderColor = "transparent";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.background = "rgba(14,165,233,.10)";
-            el.style.color = "#5EEAD4";
-            el.style.borderColor = "rgba(14,165,233,.22)";
-          }}
+          className="hcard-btn"
         >
-          Découvrir
-          <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+          Découvrir →
         </button>
       </div>
     </article>
