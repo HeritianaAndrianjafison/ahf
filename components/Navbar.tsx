@@ -60,7 +60,7 @@ export default function Navbar() {
                 AHF Foulpointe
               </div>
               <div className="text-[10px] tracking-[0.25em] uppercase mt-1" style={{ color: "var(--color-gold)" }}>
-                Association Hôtelière
+                Association Hôtelière de Foulpointe
               </div>
             </div>
           </a>

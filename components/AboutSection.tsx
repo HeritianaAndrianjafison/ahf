@@ -51,7 +51,7 @@ export default function AboutSection() {
               className="leading-relaxed mb-5"
               style={{ fontFamily: "var(--font-body)", fontSize: "1.05rem", color: "rgba(255,255,255,.58)" }}
             >
-              L'Association des Hôtels de Foulpointe (AHF) regroupe les établissements
+              L'Association Hôtelière de Foulpointe (AHF) regroupe les établissements
               hôteliers de Mahavelona et ses environs, engagés à offrir une expérience
               de séjour mémorable au cœur de la nature de la côte Est de Madagascar.
             </p>

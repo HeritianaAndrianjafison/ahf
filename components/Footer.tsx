@@ -24,12 +24,12 @@ export default function Footer() {
           />
           <div>
             <div className="font-display font-bold text-sm" style={{ color: "rgba(255,255,255,.65)" }}>AHF Foulpointe</div>
-            <div className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(255,255,255,.22)" }}>Association des Hôtels</div>
+            <div className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(255,255,255,.22)" }}>Association Hôtelière de Foulpointe</div>
           </div>
         </div>
 
         <p className="text-xs text-center" style={{ color: "rgba(255,255,255,.22)" }}>
-          © {year} Association des Hôtels de Foulpointe · Mahavelona, Côte Est Madagascar
+          © {year} Association Hôtelière de Foulpointe · Mahavelona, Côte Est Madagascar
         </p>
 
         <a
