@@ -156,20 +156,6 @@ export default function HeroSection({ coverImage }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Localisation */}
-      <div
-        className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap"
-        style={{
-          background: "rgba(7,15,24,.72)",
-          border: "1px solid rgba(200,169,110,.22)",
-          backdropFilter: "blur(16px)",
-        }}
-      >
-        <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--color-gold)" }} aria-hidden="true" />
-        <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,.65)" }}>
-          Mahavelona (Foulpointe) — 800m de la mer
-        </span>
-      </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 animate-bounce-y z-10" aria-hidden="true">
         <ChevronDown className="w-5 h-5" style={{ color: "rgba(200,169,110,.45)" }} />
