@@ -219,25 +219,26 @@ body {
 
 .hcard-overlay {
   position: absolute; bottom: 0; left: 0; right: 0;
-  height: 130px; z-index: 2;
-  background: linear-gradient(to top, rgba(0,0,0,.92), transparent);
+  height: 170px; z-index: 2;
+  background: linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,.60) 55%, transparent 100%);
   transition: height 0.75s cubic-bezier(0.19,1,0.22,1);
   pointer-events: none;
 }
-.hcard:hover .hcard-overlay { height: 295px; }
+.hcard:hover .hcard-overlay { height: 310px; }
 
 .hcard-header {
   position: absolute; bottom: 0; left: 0; width: 100%;
-  padding: 16px 18px; z-index: 3;
+  padding: 14px 18px 18px; z-index: 3;
+  background: linear-gradient(to top, rgba(7,15,24,.98) 60%, rgba(7,15,24,.82) 85%, transparent 100%);
   transition: transform 0.75s cubic-bezier(0.19,1,0.22,1);
 }
 .hcard:hover .hcard-header { transform: translateY(-105px); }
 
 .hcard-tag {
   display: inline-block;
-  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em;
+  font-size: 0.9rem; font-weight: 900; letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 3px 10px; border-radius: 9999px; margin-bottom: 6px;
+  padding: 4px 12px; border-radius: 9999px; margin-bottom: 8px;
   opacity: 0; transform: translateY(30px);
   transition: transform 0.75s cubic-bezier(0.19,1,0.22,1), opacity 0.75s;
 }

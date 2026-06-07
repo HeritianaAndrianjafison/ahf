@@ -81,7 +81,7 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
           </div>
         )}
         <h3 className="font-display font-bold text-white leading-snug"
-          style={{ fontSize: "1.25rem", marginBottom: hotel.adresse ? 4 : 0 }}>
+          style={{ fontSize: "1.3rem", marginBottom: hotel.adresse ? 5 : 0, textShadow: "0 2px 8px rgba(0,0,0,.80)" }}>
           {hotel.nom}
         </h3>
         {hotel.adresse && (
