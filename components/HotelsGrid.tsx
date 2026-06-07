@@ -55,8 +55,8 @@ function HotelCard({ hotel, onSelect }: { hotel: HotelAHF; onSelect: (h: HotelAH
       {/* Image ou initiale */}
       <div className="hcard-image">
         {cover ? (
-          <div style={{ position: "relative", width: "100%", height: "100%" }}>
-            <Image src={cover} alt={`Photo de ${hotel.nom}`} fill className="object-cover" sizes="300px" />
+          <div style={{ position: "relative", width: "100%", height: "100%", background: "#0D1C2E" }}>
+            <Image src={cover} alt={`Photo de ${hotel.nom}`} fill className="object-contain p-4" sizes="300px" />
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center"
